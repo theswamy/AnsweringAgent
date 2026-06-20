@@ -71,6 +71,23 @@ control panel. No jailbreak, fully within Apple's rules.
 
 ---
 
+## Try it without a phone or API key
+
+`backend/demo.py` runs the **real backend** end-to-end with a simulated caller —
+real FastAPI routes, real TwiML, real SQLite persistence, real companion API.
+Only the model replies and Twilio's SMS send are stubbed so it runs offline
+(set `ANTHROPIC_API_KEY` to use the real model instead).
+
+```bash
+cd backend
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python demo.py
+```
+
+It prints the incoming call, the agent's spoken greeting and conversation, the
+stored call record + transcript, and the SMS that would be texted to you.
+
 ## Setup
 
 ### 1. Backend
