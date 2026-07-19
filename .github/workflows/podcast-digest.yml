@@ -1,0 +1,93 @@
+# Sends the daily Podcast Digest email on a schedule — no server to run.
+#
+# IMPORTANT: GitHub only runs `schedule:` triggers on the repository's DEFAULT
+# branch. This workflow won't fire on cron until it's merged there. You can test
+# it from any branch via the "Run workflow" button (workflow_dispatch).
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   SMTP_HOST, SMTP_USERNAME, SMTP_PASSWORD, EMAIL_FROM   — to actually email
+#   ANTHROPIC_API_KEY                                     — optional; enables
+#       Claude-written summaries (without it, summaries fall back to show notes)
+# Optional repository variables (vars) override the defaults below:
+#   EMAIL_TO, SMTP_PORT, COUNTRY, TOP_N
+#
+# State (back-catalogue cursor + sent-episode dedupe + archive) lives in a SQLite
+# file that must survive between runs, or every run would re-send the newest
+# episode. We persist it with actions/cache. Note: an unused cache is evicted
+# after ~7 days; since this runs daily it stays warm, but a long pause resets the
+# walk (it would simply re-feature recent episodes — not harmful).
+
+name: Podcast Digest
+
+on:
+  schedule:
+    # 01:30 UTC = 07:00 IST — your morning. Adjust as you like.
+    - cron: "30 1 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Save to outbox instead of emailing"
+        type: boolean
+        default: false
+
+concurrency:
+  group: podcast-digest
+  cancel-in-progress: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: podcast-newsletter
+    env:
+      DATABASE_PATH: ${{ github.workspace }}/podcast-newsletter/state/podcast_digest.db
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      CLAUDE_MODEL: ${{ vars.CLAUDE_MODEL || 'claude-opus-4-8' }}
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ vars.SMTP_PORT || '587' }}
+      SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      SMTP_USE_TLS: "true"
+      EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+      EMAIL_TO: ${{ vars.EMAIL_TO || 'sanjay@primevp.in' }}
+      COUNTRY: ${{ vars.COUNTRY || 'us' }}
+      TOP_N: ${{ vars.TOP_N || '10' }}
+      DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: podcast-newsletter/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # Restore the persisted digest state. A unique key each run means the save
+      # always succeeds; restore-keys falls back to the most recent prior state.
+      - name: Restore digest state
+        uses: actions/cache@v4
+        with:
+          path: podcast-newsletter/state
+          key: podcast-digest-state-${{ github.run_id }}
+          restore-keys: |
+            podcast-digest-state-
+
+      - name: Build and send today's digest
+        run: |
+          mkdir -p state
+          python -m app.cli run
+
+      # Keep the rendered issues from dry-run / debugging for inspection.
+      - name: Upload rendered issue (if any)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: digest-html
+          path: podcast-newsletter/outbox/
+          if-no-files-found: ignore
+          retention-days: 14

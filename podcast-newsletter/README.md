@@ -98,13 +98,35 @@ the app password.
 
 Two options:
 
-1. **Built-in scheduler (default).** Just keep `uvicorn app.main:app` running —
-   it fires the send once a day at `SEND_HOUR` in your `TIMEZONE`.
+1. **Built-in scheduler.** Just keep `uvicorn app.main:app` running — it fires
+   the send once a day at `SEND_HOUR` in your `TIMEZONE`.
 2. **External scheduler.** Run the one-shot command from cron / GitHub Actions /
    a k8s CronJob and let it own the timing:
    ```bash
    python -m app.cli run
    ```
+
+### GitHub Actions (no server needed)
+
+A ready-made workflow lives at [`.github/workflows/podcast-digest.yml`](../.github/workflows/podcast-digest.yml).
+It runs `python -m app.cli run` daily and persists the digest state (back-catalogue
+cursor + dedupe) across runs via the Actions cache.
+
+To turn it on:
+
+1. Add repository **secrets** (Settings → Secrets and variables → Actions):
+   `SMTP_HOST`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `EMAIL_FROM`, and optionally
+   `ANTHROPIC_API_KEY`. Optional **variables**: `EMAIL_TO`, `SMTP_PORT`, `COUNTRY`,
+   `TOP_N`.
+2. **Merge the workflow to your repository's default branch** — GitHub only runs
+   `schedule:` triggers from the default branch. Until then, use the **Run
+   workflow** button (a `workflow_dispatch` with an optional dry-run toggle) to
+   test from any branch.
+
+Caveat: an unused Actions cache is evicted after ~7 days. Running daily keeps it
+warm; a long pause resets the back-catalogue walk (harmless — it just re-features
+recent episodes). If you want durable state, run option 1 or 2 on a host with a
+persistent disk instead.
 
 ---
 
