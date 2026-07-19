@@ -101,6 +101,12 @@ Gmail: create an app password at <https://myaccount.google.com/apppasswords>, se
 `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=587`, username = your address, password =
 the app password.
 
+You don't have to edit `.env` at all for local use: open the control panel and
+fill in the **Email settings** panel (sender, SMTP host/port, username, app
+password), then hit **Send test email** to confirm it works. Those values are
+saved in the local database. Environment variables, when present, take
+precedence — that's how the cloud/CI path keeps secrets in env instead of the DB.
+
 ---
 
 ## Sending daily
@@ -148,6 +154,7 @@ persistent disk instead.
 | `GET/POST /api/topics`, `POST /api/topics/{id}/toggle`, `DELETE /api/topics/{id}` | Manage topics |
 | `GET/POST /api/shows`, `POST /api/shows/resolve`, `DELETE /api/shows/{id}` | Manage followed shows (add by search text, Apple Podcasts link, iTunes id, or RSS URL) |
 | `POST /api/run` | Build + deliver today's issue now |
+| `GET/POST /api/email-settings`, `POST /api/email-settings/test` | View/save the sender + SMTP config from the UI; send a test email |
 | `GET/POST /api/recipients`, `DELETE /api/recipients/{id}` | Manage who the digest is emailed to |
 | `GET /api/newsletters`, `GET /api/newsletters/{id}` | Archive list and one issue's HTML |
 

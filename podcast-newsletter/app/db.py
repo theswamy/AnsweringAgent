@@ -63,6 +63,14 @@ CREATE TABLE IF NOT EXISTS recipients (
     added_at TEXT NOT NULL,
     UNIQUE(email)
 );
+
+-- Editable-from-the-UI settings (e.g. the email/SMTP sender config), so the
+-- local app needs no hidden .env file. Environment variables, when set, take
+-- precedence over these — that's how the cloud/CI path stays secret-based.
+CREATE TABLE IF NOT EXISTS settings (
+    key   TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
 """
 
 # Sensible starting topics for a tech/venture reader. Editable from the web UI.
@@ -226,6 +234,24 @@ def add_recipient(email: str) -> None:
 def remove_recipient(recipient_id: int) -> None:
     with _conn() as conn:
         conn.execute("DELETE FROM recipients WHERE id = ?", (recipient_id,))
+
+
+# --------------------------------------------------------------------------- #
+# UI-editable settings                                                         #
+# --------------------------------------------------------------------------- #
+
+def get_settings_map() -> dict[str, str]:
+    with _conn() as conn:
+        return {r["key"]: r["value"] for r in conn.execute("SELECT key, value FROM settings").fetchall()}
+
+
+def set_settings(values: dict[str, str]) -> None:
+    with _conn() as conn:
+        conn.executemany(
+            "INSERT INTO settings (key, value) VALUES (?, ?) "
+            "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+            [(k, v) for k, v in values.items()],
+        )
 
 
 # --------------------------------------------------------------------------- #

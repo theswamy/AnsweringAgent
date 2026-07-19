@@ -20,7 +20,7 @@ from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import db, podcasts
+from . import db, emailer, podcasts
 from .config import get_settings
 from .runner import run_daily
 from .scheduler import scheduler_loop
@@ -177,6 +177,63 @@ def add_recipient(body: RecipientIn) -> dict:
 def delete_recipient(recipient_id: int) -> dict:
     db.remove_recipient(recipient_id)
     return {"ok": True}
+
+
+# --------------------------------------------------------------------------- #
+# Email settings                                                               #
+# --------------------------------------------------------------------------- #
+
+class EmailSettingsIn(BaseModel):
+    email_from: str | None = None
+    smtp_host: str | None = None
+    smtp_port: int | None = None
+    smtp_username: str | None = None
+    smtp_password: str | None = None  # blank/omitted → keep the existing password
+    smtp_use_tls: bool | None = None
+
+
+@app.get("/api/email-settings")
+def get_email_settings() -> dict:
+    cfg = emailer.email_config()
+    # Never send the password back to the browser — just whether one is set.
+    return {
+        "email_from": cfg["email_from"],
+        "smtp_host": cfg["smtp_host"],
+        "smtp_port": cfg["smtp_port"],
+        "smtp_username": cfg["smtp_username"],
+        "smtp_use_tls": cfg["smtp_use_tls"],
+        "password_set": bool(cfg["smtp_password"]),
+    }
+
+
+@app.post("/api/email-settings")
+def save_email_settings(body: EmailSettingsIn) -> dict:
+    values: dict[str, str] = {}
+    if body.email_from is not None:
+        values["email_from"] = body.email_from.strip()
+    if body.smtp_host is not None:
+        values["smtp_host"] = body.smtp_host.strip()
+    if body.smtp_port is not None:
+        values["smtp_port"] = str(body.smtp_port)
+    if body.smtp_username is not None:
+        values["smtp_username"] = body.smtp_username.strip()
+    if body.smtp_use_tls is not None:
+        values["smtp_use_tls"] = "true" if body.smtp_use_tls else "false"
+    # Only overwrite the password when a non-empty one is supplied.
+    if body.smtp_password:
+        values["smtp_password"] = body.smtp_password
+    if values:
+        db.set_settings(values)
+    return {"ok": True}
+
+
+@app.post("/api/email-settings/test")
+def test_email_settings() -> dict:
+    try:
+        status = emailer.send_test()
+    except Exception as exc:  # surface the real SMTP error to the user
+        raise HTTPException(400, f"Test failed: {exc}")
+    return {"ok": True, "status": status}
 
 
 # --------------------------------------------------------------------------- #
