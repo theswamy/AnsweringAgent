@@ -8,6 +8,9 @@ venv/
 *.db-shm
 .env
 
+# Podcast Digest generated output
+outbox/
+
 # macOS / Xcode
 .DS_Store
 xcuserdata/

@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Podcast Digest — control panel</title>
+<style>
+  :root { --accent:#7a5cff; --bg:#f4f4f7; --card:#fff; --ink:#1c1c28; --muted:#8a8a99; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; }
+  .wrap { max-width:720px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:28px; margin:0 0 4px; }
+  .sub { color:var(--muted); margin:0 0 28px; }
+  .card { background:var(--card); border-radius:14px; padding:20px 22px; margin-bottom:20px;
+          box-shadow:0 1px 3px rgba(20,20,40,.06); }
+  h2 { font-size:14px; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); margin:0 0 14px; }
+  .row { display:flex; align-items:center; justify-content:space-between; gap:10px;
+         padding:9px 0; border-bottom:1px solid #eef; font-size:15px; }
+  .row:last-child { border-bottom:none; }
+  .row .name { font-weight:600; }
+  .row .name small { font-weight:400; color:var(--muted); }
+  .off .name { opacity:.4; text-decoration:line-through; }
+  input, select { font-size:15px; padding:9px 11px; border:1px solid #dcdce6; border-radius:8px;
+                  background:#fff; color:var(--ink); }
+  input { flex:1; min-width:0; }
+  button { font-size:14px; font-weight:600; padding:9px 14px; border:none; border-radius:8px;
+           background:var(--accent); color:#fff; cursor:pointer; }
+  button.ghost { background:#eeeef6; color:#55556a; }
+  button.link { background:none; color:var(--muted); padding:4px 6px; }
+  .adder { display:flex; gap:8px; margin-top:12px; }
+  .hint { color:var(--muted); font-size:13px; margin-top:8px; }
+  .status { font-size:14px; padding:10px 12px; border-radius:8px; background:#eef; margin-top:12px; }
+  a { color:var(--accent); text-decoration:none; }
+  .empty { color:var(--muted); font-size:14px; }
+  .field { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .field label { width:110px; color:var(--muted); font-size:13px; flex:none; }
+  .field input { flex:1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🎧 Podcast Digest</h1>
+  <p class="sub">Your daily email digest — top charts by topic, plus one prior episode a day from the shows you follow.</p>
+
+  <div class="card">
+    <h2>Topics</h2>
+    <div id="topics"></div>
+    <div class="adder">
+      <select id="genre"></select>
+      <button onclick="addTopic()">Add topic</button>
+    </div>
+    <p class="hint">Each enabled topic contributes today's Apple Podcasts top 10 to your digest.</p>
+  </div>
+
+  <div class="card">
+    <h2>Shows you follow</h2>
+    <div id="shows"></div>
+    <div class="adder">
+      <input id="showq" placeholder="Search, or paste an Apple Podcasts link / RSS feed URL">
+      <button onclick="addShow()">Add show</button>
+    </div>
+    <p class="hint">Followed shows get a full episode summary each day, working one episode back through the catalogue.</p>
+  </div>
+
+  <div class="card">
+    <h2>Email settings</h2>
+    <div class="field"><label>Send from</label>
+      <input id="s_from" placeholder="podcastsummary@primevp.in"></div>
+    <div class="field"><label>SMTP host</label>
+      <input id="s_host" placeholder="smtp.gmail.com"></div>
+    <div class="field"><label>Port</label>
+      <input id="s_port" placeholder="587" style="max-width:120px"></div>
+    <div class="field"><label>Username</label>
+      <input id="s_user" placeholder="podcastsummary@primevp.in"></div>
+    <div class="field"><label>App password</label>
+      <input id="s_pass" type="password" placeholder="leave blank to keep current"></div>
+    <div class="adder" style="margin-top:6px">
+      <button onclick="saveEmail()">Save settings</button>
+      <button class="ghost" onclick="testEmail()">Send test email</button>
+    </div>
+    <div id="emailstatus"></div>
+    <p class="hint">For Gmail / Google Workspace, use a 16-character <b>app password</b>, not the account password. Stored locally on this computer only.</p>
+  </div>
+
+  <div class="card">
+    <h2>Recipients</h2>
+    <div id="recipients"></div>
+    <div class="adder">
+      <input id="recip" type="email" placeholder="colleague@primevp.in">
+      <button onclick="addRecipient()">Add recipient</button>
+    </div>
+    <p class="hint">Everyone here gets the daily email. Addresses are kept private from each other (sent via Bcc).</p>
+  </div>
+
+  <div class="card">
+    <h2>Today's digest</h2>
+    <button onclick="runNow()">Build &amp; send now</button>
+    <div id="runstatus"></div>
+  </div>
+
+  <div class="card">
+    <h2>Archive</h2>
+    <div id="archive"></div>
+  </div>
+</div>
+
+<script>
+const api = (path, opts) => fetch(path, opts).then(async r => {
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || r.statusText);
+  return r.headers.get("content-type")?.includes("json") ? r.json() : r.text();
+});
+
+async function loadGenres() {
+  const g = await api("/api/genres");
+  const sel = document.getElementById("genre");
+  sel.innerHTML = Object.keys(g).map(n => `<option>${n}</option>`).join("");
+}
+
+async function loadTopics() {
+  const topics = await api("/api/topics");
+  const el = document.getElementById("topics");
+  if (!topics.length) { el.innerHTML = '<div class="empty">No topics yet.</div>'; return; }
+  el.innerHTML = topics.map(t => `
+    <div class="row ${t.enabled ? "" : "off"}">
+      <span class="name">${t.name}</span>
+      <span>
+        <button class="ghost" onclick="toggleTopic(${t.id}, ${t.enabled ? 0 : 1})">${t.enabled ? "Disable" : "Enable"}</button>
+        <button class="link" onclick="delTopic(${t.id})">Remove</button>
+      </span>
+    </div>`).join("");
+}
+
+async function loadShows() {
+  const shows = await api("/api/shows");
+  const el = document.getElementById("shows");
+  if (!shows.length) { el.innerHTML = '<div class="empty">No followed shows yet.</div>'; return; }
+  el.innerHTML = shows.map(s => `
+    <div class="row">
+      <span class="name">${s.title} <small>· up to episode #${s.cursor}</small></span>
+      <button class="link" onclick="delShow(${s.id})">Remove</button>
+    </div>`).join("");
+}
+
+async function loadArchive() {
+  const items = await api("/api/newsletters");
+  const el = document.getElementById("archive");
+  if (!items.length) { el.innerHTML = '<div class="empty">No issues sent yet.</div>'; return; }
+  el.innerHTML = items.map(n => `
+    <div class="row">
+      <span><a href="/api/newsletters/${n.id}" target="_blank">${n.subject}</a>
+        <small style="color:var(--muted)">${n.sent ? "· emailed" : "· saved"}</small></span>
+      <span style="color:var(--muted);font-size:13px">${n.for_date}</span>
+    </div>`).join("");
+}
+
+async function addTopic() {
+  await api("/api/topics", { method:"POST", headers:{"content-type":"application/json"},
+    body: JSON.stringify({ name: document.getElementById("genre").value }) });
+  loadTopics();
+}
+const toggleTopic = (id, en) => api(`/api/topics/${id}/toggle?enabled=${en ? "true" : "false"}`, { method:"POST" }).then(loadTopics);
+const delTopic = id => api(`/api/topics/${id}`, { method:"DELETE" }).then(loadTopics);
+
+async function addShow() {
+  const q = document.getElementById("showq");
+  if (!q.value.trim()) return;
+  const btn = event.target; btn.disabled = true; btn.textContent = "Adding…";
+  try { await api("/api/shows", { method:"POST", headers:{"content-type":"application/json"},
+        body: JSON.stringify({ query: q.value }) }); q.value = ""; loadShows(); }
+  catch (e) { alert(e.message); }
+  finally { btn.disabled = false; btn.textContent = "Add show"; }
+}
+const delShow = id => api(`/api/shows/${id}`, { method:"DELETE" }).then(loadShows);
+
+async function loadEmail() {
+  const s = await api("/api/email-settings");
+  document.getElementById("s_from").value = s.email_from || "";
+  document.getElementById("s_host").value = s.smtp_host || "smtp.gmail.com";
+  document.getElementById("s_port").value = s.smtp_port || 587;
+  document.getElementById("s_user").value = s.smtp_username || "";
+  document.getElementById("s_pass").placeholder = s.password_set ? "•••••• (saved) — leave blank to keep" : "16-character app password";
+}
+async function saveEmail() {
+  const body = {
+    email_from: document.getElementById("s_from").value,
+    smtp_host: document.getElementById("s_host").value,
+    smtp_port: parseInt(document.getElementById("s_port").value || "587", 10),
+    smtp_username: document.getElementById("s_user").value,
+    smtp_password: document.getElementById("s_pass").value,
+  };
+  const st = document.getElementById("emailstatus");
+  try { await api("/api/email-settings", { method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify(body) });
+    document.getElementById("s_pass").value = "";
+    st.innerHTML = '<div class="status">Saved.</div>'; loadEmail(); }
+  catch (e) { st.innerHTML = `<div class="status">Error: ${e.message}</div>`; }
+}
+async function testEmail() {
+  const st = document.getElementById("emailstatus");
+  st.innerHTML = '<div class="status">Sending test…</div>';
+  try { const r = await api("/api/email-settings/test", { method:"POST" });
+    st.innerHTML = `<div class="status">${r.status}</div>`; }
+  catch (e) { st.innerHTML = `<div class="status">${e.message}</div>`; }
+}
+
+async function loadRecipients() {
+  const people = await api("/api/recipients");
+  const el = document.getElementById("recipients");
+  if (!people.length) { el.innerHTML = '<div class="empty">No recipients yet.</div>'; return; }
+  el.innerHTML = people.map(r => `
+    <div class="row">
+      <span class="name">${r.email}</span>
+      <button class="link" onclick="delRecipient(${r.id})">Remove</button>
+    </div>`).join("");
+}
+async function addRecipient() {
+  const inp = document.getElementById("recip");
+  if (!inp.value.trim()) return;
+  try { await api("/api/recipients", { method:"POST", headers:{"content-type":"application/json"},
+        body: JSON.stringify({ email: inp.value }) }); inp.value = ""; loadRecipients(); }
+  catch (e) { alert(e.message); }
+}
+const delRecipient = id => api(`/api/recipients/${id}`, { method:"DELETE" }).then(loadRecipients);
+
+async function runNow() {
+  const s = document.getElementById("runstatus");
+  const btn = event.target; btn.disabled = true; btn.textContent = "Working…";
+  s.innerHTML = '<div class="status">Building today\'s digest…</div>';
+  try {
+    const r = await api("/api/run", { method:"POST" });
+    s.innerHTML = `<div class="status"><b>${r.subject}</b><br>${r.deep_dives} deep dive(s), ${r.topics} topic chart(s).<br>${r.delivery}
+      <br><a href="/api/newsletters/${r.newsletter_id}" target="_blank">Preview this issue →</a></div>`;
+    loadArchive();
+  } catch (e) { s.innerHTML = `<div class="status">Error: ${e.message}</div>`; }
+  finally { btn.disabled = false; btn.textContent = "Build & send now"; }
+}
+
+loadGenres(); loadTopics(); loadShows(); loadEmail(); loadRecipients(); loadArchive();
+</script>
+</body>
+</html>
