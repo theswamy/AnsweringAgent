@@ -55,6 +55,14 @@ CREATE TABLE IF NOT EXISTS newsletters (
     sent     INTEGER NOT NULL DEFAULT 0,
     created  TEXT NOT NULL
 );
+
+-- Everyone the digest is emailed to. Start with just you; add colleagues later.
+CREATE TABLE IF NOT EXISTS recipients (
+    id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    email    TEXT NOT NULL,
+    added_at TEXT NOT NULL,
+    UNIQUE(email)
+);
 """
 
 # Sensible starting topics for a tech/venture reader. Editable from the web UI.
@@ -80,6 +88,15 @@ def init_db() -> None:
             conn.executemany(
                 "INSERT OR IGNORE INTO topics (name, genre_id) VALUES (?, ?)",
                 _DEFAULT_TOPICS,
+            )
+        # Seed the recipient list with the configured owner address, so the first
+        # send has somewhere to go. Colleagues get added later from the web UI.
+        seed = get_settings().email_to
+        no_recipients = conn.execute("SELECT COUNT(*) AS n FROM recipients").fetchone()["n"] == 0
+        if seed and no_recipients:
+            conn.execute(
+                "INSERT OR IGNORE INTO recipients (email, added_at) VALUES (?, ?)",
+                (seed, date.today().isoformat()),
             )
 
 
@@ -182,6 +199,33 @@ def mark_sent(show_id: int, guid: str) -> None:
             "INSERT OR IGNORE INTO sent_episodes (show_id, episode_guid, sent_on) VALUES (?, ?, ?)",
             (show_id, guid, date.today().isoformat()),
         )
+
+
+# --------------------------------------------------------------------------- #
+# Recipients                                                                   #
+# --------------------------------------------------------------------------- #
+
+def list_recipients() -> list[dict]:
+    with _conn() as conn:
+        return [dict(r) for r in conn.execute("SELECT * FROM recipients ORDER BY email").fetchall()]
+
+
+def recipient_emails() -> list[str]:
+    """Just the addresses, for the mailer."""
+    return [r["email"] for r in list_recipients()]
+
+
+def add_recipient(email: str) -> None:
+    with _conn() as conn:
+        conn.execute(
+            "INSERT OR IGNORE INTO recipients (email, added_at) VALUES (?, ?)",
+            (email, date.today().isoformat()),
+        )
+
+
+def remove_recipient(recipient_id: int) -> None:
+    with _conn() as conn:
+        conn.execute("DELETE FROM recipients WHERE id = ?", (recipient_id,))
 
 
 # --------------------------------------------------------------------------- #

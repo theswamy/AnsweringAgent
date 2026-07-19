@@ -61,6 +61,16 @@
   </div>
 
   <div class="card">
+    <h2>Recipients</h2>
+    <div id="recipients"></div>
+    <div class="adder">
+      <input id="recip" type="email" placeholder="colleague@primevp.in">
+      <button onclick="addRecipient()">Add recipient</button>
+    </div>
+    <p class="hint">Everyone here gets the daily email. Addresses are kept private from each other (sent via Bcc).</p>
+  </div>
+
+  <div class="card">
     <h2>Today's digest</h2>
     <button onclick="runNow()">Build &amp; send now</button>
     <div id="runstatus"></div>
@@ -140,6 +150,25 @@ async function addShow() {
 }
 const delShow = id => api(`/api/shows/${id}`, { method:"DELETE" }).then(loadShows);
 
+async function loadRecipients() {
+  const people = await api("/api/recipients");
+  const el = document.getElementById("recipients");
+  if (!people.length) { el.innerHTML = '<div class="empty">No recipients yet.</div>'; return; }
+  el.innerHTML = people.map(r => `
+    <div class="row">
+      <span class="name">${r.email}</span>
+      <button class="link" onclick="delRecipient(${r.id})">Remove</button>
+    </div>`).join("");
+}
+async function addRecipient() {
+  const inp = document.getElementById("recip");
+  if (!inp.value.trim()) return;
+  try { await api("/api/recipients", { method:"POST", headers:{"content-type":"application/json"},
+        body: JSON.stringify({ email: inp.value }) }); inp.value = ""; loadRecipients(); }
+  catch (e) { alert(e.message); }
+}
+const delRecipient = id => api(`/api/recipients/${id}`, { method:"DELETE" }).then(loadRecipients);
+
 async function runNow() {
   const s = document.getElementById("runstatus");
   const btn = event.target; btn.disabled = true; btn.textContent = "Working…";
@@ -153,7 +182,7 @@ async function runNow() {
   finally { btn.disabled = false; btn.textContent = "Build & send now"; }
 }
 
-loadGenres(); loadTopics(); loadShows(); loadArchive();
+loadGenres(); loadTopics(); loadShows(); loadRecipients(); loadArchive();
 </script>
 </body>
 </html>

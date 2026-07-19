@@ -149,6 +149,37 @@ def delete_show(show_id: int) -> dict:
 
 
 # --------------------------------------------------------------------------- #
+# Recipients                                                                   #
+# --------------------------------------------------------------------------- #
+
+_EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+class RecipientIn(BaseModel):
+    email: str
+
+
+@app.get("/api/recipients")
+def get_recipients() -> list[dict]:
+    return db.list_recipients()
+
+
+@app.post("/api/recipients")
+def add_recipient(body: RecipientIn) -> dict:
+    email = body.email.strip()
+    if not _EMAIL_RE.match(email):
+        raise HTTPException(400, f"'{email}' doesn't look like an email address.")
+    db.add_recipient(email)
+    return {"ok": True}
+
+
+@app.delete("/api/recipients/{recipient_id}")
+def delete_recipient(recipient_id: int) -> dict:
+    db.remove_recipient(recipient_id)
+    return {"ok": True}
+
+
+# --------------------------------------------------------------------------- #
 # Run + archive                                                                #
 # --------------------------------------------------------------------------- #
 

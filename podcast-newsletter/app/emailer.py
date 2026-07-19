@@ -14,6 +14,7 @@ from datetime import date
 from email.message import EmailMessage
 from email.utils import formataddr
 
+from . import db
 from .config import get_settings
 
 _OUTBOX = "outbox"
@@ -21,26 +22,43 @@ _OUTBOX = "outbox"
 
 def _smtp_configured() -> bool:
     s = get_settings()
-    return bool(s.smtp_host and s.email_from and s.email_to)
+    return bool(s.smtp_host and s.email_from)
+
+
+def _recipients() -> list[str]:
+    """The current recipient list (managed in the web UI), else the config seed."""
+    people = db.recipient_emails()
+    if people:
+        return people
+    return [get_settings().email_to] if get_settings().email_to else []
 
 
 def deliver(subject: str, html: str, for_date: date | None = None) -> str:
     """Send (or, in dry-run, save) the newsletter. Returns a human-readable status."""
     s = get_settings()
     for_date = for_date or date.today()
+    recipients = _recipients()
 
-    if s.dry_run or not _smtp_configured():
+    if s.dry_run or not _smtp_configured() or not recipients:
         os.makedirs(_OUTBOX, exist_ok=True)
         path = os.path.join(_OUTBOX, f"digest-{for_date.isoformat()}.html")
         with open(path, "w", encoding="utf-8") as fh:
             fh.write(html)
-        reason = "DRY_RUN set" if s.dry_run else "SMTP not configured"
+        if s.dry_run:
+            reason = "DRY_RUN set"
+        elif not recipients:
+            reason = "no recipients configured"
+        else:
+            reason = "SMTP not configured"
         return f"Saved to {path} ({reason}) — not emailed."
 
     msg = EmailMessage()
     msg["Subject"] = subject
     msg["From"] = formataddr(("Podcast Digest", s.email_from))
-    msg["To"] = s.email_to
+    # The list is addressed to the sending account; individual recipients go on
+    # Bcc so nobody sees anyone else's address as the team grows.
+    msg["To"] = formataddr(("Podcast Digest", s.email_from))
+    msg["Bcc"] = ", ".join(recipients)
     msg.set_content(
         "Your Podcast Digest is best viewed as HTML. If you're seeing this, your "
         "mail client can't render HTML email."
@@ -56,7 +74,8 @@ def deliver(subject: str, html: str, for_date: date | None = None) -> str:
                 srv.starttls(context=ssl.create_default_context())
             _login_and_send(srv, s, msg)
 
-    return f"Emailed to {s.email_to}."
+    n = len(recipients)
+    return f"Emailed to {n} recipient{'s' if n != 1 else ''}."
 
 
 def _login_and_send(srv: smtplib.SMTP, s, msg: EmailMessage) -> None:

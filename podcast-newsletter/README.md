@@ -52,18 +52,26 @@ real transcript summarization later is just a change to `summarize.py`.)
 
 ## Quick start
 
+**Easiest — the control panel on your laptop.** Double-click **`run.command`**
+(macOS) or **`run.bat`** (Windows). The first run sets everything up, then your
+browser opens to <http://localhost:8000> where you can pick topics, add
+podcasts, manage recipients, preview an issue, and read the archive. Requires
+[Python 3.11+](https://www.python.org/downloads/) installed.
+
+**From a terminal:**
+
 ```bash
 cd podcast-newsletter
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-# 1) See a sample issue immediately — no keys, no network:
+# See a sample issue immediately — no keys, no network:
 python demo.py            # writes & opens ./outbox/digest-*.html
 
-# 2) Run the real app:
+# Run the control panel:
 cp .env.example .env      # fill in what you have (all optional to start)
 uvicorn app.main:app --reload
-# open http://localhost:8000  → pick topics, add shows, hit "Build & send now"
+# open http://localhost:8000
 ```
 
 With **no configuration at all** the app still runs end to end: it sources real
@@ -80,7 +88,8 @@ stage.
 | `ANTHROPIC_API_KEY` | Enables Claude-written summaries. Without it, the digest echoes trimmed show notes. |
 | `CLAUDE_MODEL` | Defaults to `claude-opus-4-8`; `claude-haiku-4-5` is cheaper for daily sends. |
 | `SMTP_HOST` / `SMTP_PORT` / `SMTP_USERNAME` / `SMTP_PASSWORD` / `SMTP_USE_TLS` | Email relay. Works with a Gmail app password, SendGrid, SES, Postmark, etc. |
-| `EMAIL_FROM` / `EMAIL_TO` | Sender and recipient. |
+| `EMAIL_FROM` | The sending account (e.g. a generic `digest@yourdomain`). |
+| `EMAIL_TO` | Seeds the **first** recipient on first run. After that, manage the whole recipient list in the web UI — the digest is Bcc'd to everyone on it. |
 | `DRY_RUN` | `true` (or blank SMTP) → save to `./outbox/` instead of emailing. |
 | `COUNTRY` | Apple storefront for charts/search (`us`, `in`, …). |
 | `TOP_N` | Shows per topic chart (default 10). |
@@ -139,7 +148,15 @@ persistent disk instead.
 | `GET/POST /api/topics`, `POST /api/topics/{id}/toggle`, `DELETE /api/topics/{id}` | Manage topics |
 | `GET/POST /api/shows`, `POST /api/shows/resolve`, `DELETE /api/shows/{id}` | Manage followed shows (add by search text, Apple Podcasts link, iTunes id, or RSS URL) |
 | `POST /api/run` | Build + deliver today's issue now |
+| `GET/POST /api/recipients`, `DELETE /api/recipients/{id}` | Manage who the digest is emailed to |
 | `GET /api/newsletters`, `GET /api/newsletters/{id}` | Archive list and one issue's HTML |
+
+### Recipients / your team
+
+The digest is Bcc'd to everyone on the recipient list, so addresses stay private
+as the list grows. Start solo and add colleagues from the **Recipients** section
+of the control panel. Use a generic sending account (e.g. `digest@yourdomain`) as
+`EMAIL_FROM` so the newsletter reads as coming from the team, not a person.
 
 ---
 
@@ -159,6 +176,8 @@ podcast-newsletter/
 │   ├── cli.py          `python -m app.cli run`
 │   └── main.py         FastAPI web UI + JSON API
 ├── static/index.html   control panel (vanilla JS)
+├── run.command         double-click launcher (macOS/Linux)
+├── run.bat             double-click launcher (Windows)
 ├── demo.py             offline end-to-end sample (no keys, no network)
 ├── requirements.txt
 └── .env.example
