@@ -1,0 +1,2 @@
+# Development / test dependencies for the outreach agent.
+pytest==8.3.4
