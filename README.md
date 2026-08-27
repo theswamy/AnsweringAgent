@@ -186,9 +186,9 @@ and [`docs/presentation/sb2-nlp-flow.html`](docs/presentation/sb2-nlp-flow.html)
 (open it in a browser; arrow keys advance it).
 The headline: the document's own arithmetic is sound, but the liqpref repays NLPF
 while NLPI funded 90% of the cheque (its own open question, asked twice), and the worked
-exits split the buyer's cheque on x1 where the structure says x2 — which now also sets
-the pref multiple. 9.86x nets $35M against a 1.4% slice that never arrives outside the
-pref; netted against the 12.6% SB2 actually sold at the portco level, it is 8.74x.
+exits sell 1.4% pro-rata where the structure says NLPI owns 12.6% — which now also sizes
+the pref, since the pref plus NLPI's pro-rata sales must add to 10x of the feeder's
+$3.5M. At 1.4% the legs are 9.86x + 0.14x; at 12.6% they are 8.74x + 1.26x.
 
 ```bash
 python -m unittest discover -s deal_agent/tests -t .          # 45 tests, no deps

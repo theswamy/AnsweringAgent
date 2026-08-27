@@ -165,10 +165,11 @@ def deal_terms() -> str:
             "nlpf_contribution_musd": terms.feeder_contribution,
             "nlpf_liqpref_multiple": terms.feeder_liqpref_multiple,
             "nlpf_liqpref_musd": terms.feeder_liqpref,
-            "nlpf_liqpref_note": "9.86x = 98.6% of $35M, as stated. SB2 cannot grant a pref "
-            "over shares it has already sold, but what it sold at the portco level is x2 = "
-            "12.6% to NLPI, not x1 = 1.4% (NLPF's interest inside the fund) - so the "
-            "consistent figure is 8.74x = $30.59M. See pref_consistency and finding F2.",
+            "nlpf_liqpref_note": "NLP's 1x is settled in two legs measured on the feeder's "
+            "$3.5M: 9.86x through the pref (SB2 -> NLPF) plus 0.14x from NLPI's pro-rata share "
+            "sales = 10x = $35M. The pref is the balance after NLPI's own sales, so it moves "
+            "with them: at the x2 = 12.6% of [S5] the legs are 8.74x + 1.26x. See "
+            "pref_consistency and findings F2, F14.",
             "nlpi_onshore_musd": terms.onshore_contribution,
             "x1_pct_of_class_b": terms.x1_class_b,
             "x2_pct_of_portco_stakes": terms.x2_portco,

@@ -63,17 +63,21 @@ class DealTerms:
 
     @property
     def feeder_liqpref(self) -> float:
-        """9.86x on $3.5M = $34.51M, as the document states it.
+        """9.86x on $3.5M = $34.51M.
 
-        The pref is sized to the NLP cheque rather than to the feeder's own
-        money - that is the mechanism by which NLPI's onshore purchase price is
-        repaid through the Mauritius entity - and it is held short of the full
-        $35M on the principle that SB2 cannot grant a pref over shares it has
-        already sold. The principle is right; 98.6% applies it to the wrong
-        percentage. What SB2 sold away at the portco level is x2 = 12.6% to
-        NLPI; x1 = 1.4% is NLPF's interest *inside* the fund, which is paid out
-        of SB2's own distributions and so never reaches NLP outside the pref.
-        The consistent figure is 8.74x. See `pref_consistency`.
+        NLP's 1x is settled through two legs, both conveniently measured on the
+        feeder's $3.5M, and they add to 10x = the whole $35M cheque:
+
+            9.86x   the liqpref, SB2 -> NLPF in Mauritius        $34.51M
+            0.14x   NLPI's pro-rata share sales, onshore         $ 0.49M
+           -----                                                --------
+           10.00x   NLP's 1x                                     $35.00M
+
+        That is why the pref is 9.86x and not a round 10x: SB2 cannot prefer
+        what it no longer owns, so the pref is the balance after NLPI's own
+        pro-rata sales. The size of the second leg - and therefore of the pref -
+        depends on how much NLPI sells alongside SB2 at each exit, which the
+        document gives two answers for. See `pref_consistency`.
         """
         return self.feeder_contribution * self.feeder_liqpref_multiple
 
@@ -194,26 +198,23 @@ def pref_consistency(
     onshore_pct: float | None = None,
     terms: DealTerms = DealTerms(),
 ) -> dict[str, float]:
-    """Check the pref multiple against the onshore slice it is netted against.
+    """Size the pref against the pro-rata slice NLPI sells alongside SB2.
 
-    SB2 can only grant a pref over what SB2 still owns, so if NLPI takes `d` of
-    every exit onshore, the pref that repays NLP exactly its $35M and not a
-    dollar more is
+    NLP's 1x arrives through two legs and they must add to $35M. If NLPI sells
+    `d` of every exit pro-rata and keeps those proceeds, the pref is the balance:
 
         pref = (1 - d) x $35M
 
-    at which point NLP's two entities are made whole together: it has taken
-    `d * X` onshore and `(1 - d) * X` through the pref, so it is whole at
-    X = $35M of exits and the pref is exhausted at the same moment.
+    Both legs are then exhausted at the same moment: NLP has taken `d * X`
+    onshore and `(1 - d) * X` through the pref, so it is whole at X = $35M of
+    exits and not a dollar earlier or later.
 
-    That makes the multiple a *derived* number, not an independent term, and
-    `d` has to be a *portco-level* percentage - money that reaches NLP without
-    passing through SB2. Only NLPI's x2 = 12.6% qualifies, which gives 8.74x.
-    The document's 9.86x nets off x1 = 1.4% instead, but x1 is NLPF's interest
-    inside the fund: during the pref period SB2 distributes 100% to NLPF anyway,
-    so nothing arrives on account of x1 outside the pref and the $0.49M netted
-    off is phantom. Holding 9.86x while NLPI takes 12.6% over-repays NLP out of
-    Class A and Class B1.
+    So the multiple is derived, not independently negotiated - and the document
+    gives two values for `d`. Its worked exits sell 1.4% pro-rata, which is what
+    produces the stated 9.86x + 0.14x. If NLPI instead sells the x2 = 12.6% that
+    [S5] says it owns, the legs are 8.74x + 1.26x - the same $35M, a smaller
+    pref. Keeping 9.86x while NLPI sells 12.6% leaves the pref running past
+    NLP's 1x, over-repaying it out of Class A and Class B1.
     """
     d = terms.x1_class_b if onshore_pct is None else onshore_pct
     consistent = (1 - d) * terms.check

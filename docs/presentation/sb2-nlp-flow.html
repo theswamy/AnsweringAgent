@@ -603,28 +603,31 @@
   </section>
 
   <!-- 7 -->
-  <section class="slide" data-title="Sizing the pref">
-    <p class="kicker">Step 4 · The pref, and why it is not a round number</p>
-    <h2>You cannot grant a preference over shares you no longer own</h2>
-    <p class="body">NLP's 1x has to come back from two places, because its money went to two places.
-      NLPI owns 12.6% of each position outright — buyers pay it directly, onshore, at every exit, with
-      no preference involved. The preference can only run over the 87.4% SB2 still owns. So it should
-      be sized to the balance:</p>
-    <div class="formula" data-step="1">pref = ( 1 − <em>the share SB2 sold at the portco level</em> ) × $35M</div>
-    <div class="scroller" data-step="2">
+  <section class="slide" data-title="Settling the 1x">
+    <p class="kicker">Step 4 · How NLP's 1x is settled</p>
+    <h2>Two legs, measured on the same $3.5M</h2>
+    <p class="body">NLP's money went to two places, so its 1x comes back from two places. The
+      convenient unit is the feeder's $3.5M: NLP's whole $35M is <strong>10x</strong> of it, and the
+      two legs have to add up to that.</p>
+    <div class="scroller" data-step="1">
       <table>
-        <thead><tr><th>Netted against…</th><th>What it is</th><th class="f">Pref</th><th class="f">Multiple on $3.5M</th></tr></thead>
+        <thead><tr><th>Leg</th><th>Route</th><th class="f">Multiple</th><th class="f">Amount</th></tr></thead>
         <tbody>
-          <tr><td class="lead">x2 = 12.6% → NLPI</td><td>portco shares SB2 sold — reaches NLP without touching the fund</td><td class="f good">$30.59M</td><td class="f good">8.74x</td></tr>
-          <tr><td class="lead">x1 = 1.4% → NLPF</td><td>an interest <em>inside</em> the fund, paid out of SB2's own distributions</td><td class="f warn">$34.51M</td><td class="f warn">9.86x · as drafted</td></tr>
+          <tr><td class="lead">The liqpref</td><td>SB2 → NLPF, in Mauritius</td><td class="f">9.86x</td><td class="f">$34.51M</td></tr>
+          <tr><td class="lead">Pro-rata share sales</td><td>buyers → NLPI, onshore in India</td><td class="f">0.14x</td><td class="f">$0.49M</td></tr>
+          <tr class="total"><td>NLP's 1x, settled</td><td></td><td class="f good">10.00x</td><td class="f good">$35.00M</td></tr>
         </tbody>
       </table>
     </div>
-    <div class="note" data-step="3"><b>the principle is right, the percentage is not</b>While the
-      preference runs, SB2 distributes 100% of its receipts to NLPF — so nothing reaches NLP on
-      account of the 1.4% outside the preference, and the $0.49M that 9.86x nets off never arrives.
-      The only money that comes back outside the preference is NLPI's 12.6%, which makes the
-      consistent figure <strong>8.74x</strong>. <span class="sid">S5</span> <span class="sid">S9</span></div>
+    <p class="body" data-step="2">This is why the pref is 9.86x rather than a round 10x. SB2 cannot
+      prefer what it no longer owns — NLPI sells its own shares alongside SB2 at every exit and keeps
+      those proceeds, so the pref is sized to the balance. The two legs are exhausted at the same
+      moment, and NLP is whole at exactly $35M of exits. <span class="sid">S5</span>
+      <span class="sid">S9</span></p>
+    <div class="note" data-step="3"><b>the split of the legs is still open</b>The total is 10x however
+      NLPI's pro-rata sale is sized. As drafted it sells 1.4% of each cheque, giving 9.86x + 0.14x.
+      If it sells the 12.6% that <span class="sid">S5</span> says it owns, the legs are
+      <strong>8.74x + 1.26x</strong> — same $35M, different pref. Next slide but one.</div>
   </section>
 
   <!-- 8 -->
@@ -769,23 +772,24 @@
     <h2>One percentage sets both the exit split and the pref multiple</h2>
     <p class="body">The structure sells NLPI <strong>12.6%</strong> of each portco position
       <span class="sid">S5</span>, and the tail duly splits each cheque 88 / 12 <span class="sid">S10</span>.
-      But the worked exits split it 98.6 / <strong>1.4</strong> — and 1.4% is x1, a percentage of Class B
-      <em>inside the fund</em>, not of a portco position. The same substitution sizes the pref.</p>
+      But the worked exits sell only <strong>1.4%</strong> pro-rata — the value of x1, which is a
+      percentage of Class B <em>inside</em> the fund, not of a portco position. That same 1.4% sizes
+      the pref at 9.86x.</p>
     <div class="scroller" data-step="1">
       <table>
         <thead>
           <tr><th>If NLPI's onshore slice is…</th><th class="f">Consistent pref</th><th>Holding 9.86x anyway</th></tr>
         </thead>
         <tbody>
-          <tr><td class="lead">1.4% — the worked exits</td><td class="f good">9.86x · $34.51M</td><td>correct: NLP whole at exactly $35M</td></tr>
-          <tr><td class="lead">12.6% — the structure</td><td class="f warn">8.74x · $30.59M</td><td class="warn">pref clears only after $39.49M of exits — NLP takes $4.49M more than its 1x, out of Class A and the old LPs</td></tr>
+          <tr><td class="lead">1.4% — the worked exits</td><td class="f">9.86x · $34.51M</td><td>NLP whole at exactly $35M, as drafted</td></tr>
+          <tr><td class="lead">12.6% — the structure</td><td class="f">8.74x · $30.59M</td><td class="warn">also whole at $35M — but keeping 9.86x here means the pref clears only after $39.49M of exits, so NLP takes $4.49M more than its 1x, out of Class A and the old LPs</td></tr>
         </tbody>
       </table>
     </div>
-    <div class="note" data-step="2"><b>consequence</b>9.86x is not an independently negotiated term —
-      it is a function of the split. Since the exact x1 and x2 are still to be settled, the pref
-      belongs in the documents as a formula or as a cap on aggregate priority receipts, not as a
-      hard multiple on the feeder's $3.5M.</div>
+    <div class="note" data-step="2"><b>consequence</b>The pref multiple is not an independent term —
+      it is 10x less whatever NLPI's pro-rata sales bring in. Since the exact x1 and x2 are still to
+      be settled, the pref belongs in the documents as that formula, or as a cap on NLP's aggregate
+      priority receipts, rather than as a hard multiple on the feeder's $3.5M.</div>
   </section>
 
   <!-- 12 -->

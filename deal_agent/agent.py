@@ -142,34 +142,47 @@ def _answer_cap_table(_: str) -> str:
     )
 
 
+def _leg_row(multiple: float, label: str, amount: float) -> str:
+    return f"  {multiple:5.2f}x   {label:<38}${amount:6,.2f}M"
+
+
 def _answer_liqpref(_: str) -> str:
     terms = DealTerms()
     at_x1 = pref_consistency(terms.x1_class_b)
     at_x2 = pref_consistency(terms.x2_portco)
+    leg2_x1 = terms.check - at_x1["consistent_pref"]
+    leg2_x2 = terms.check - at_x2["consistent_pref"]
+    feeder = terms.feeder_contribution
+    table = "\n".join(
+        [
+            _leg_row(terms.feeder_liqpref_multiple, "the liqpref, SB2 -> NLPF in Mauritius",
+                     terms.feeder_liqpref),
+            _leg_row(leg2_x1 / feeder, "NLPI's pro-rata share sales, onshore", leg2_x1),
+            "  " + "-" * 5 + " " * 38 + "-" * 8,
+            _leg_row(10.0, "NLP's 1x", terms.check),
+        ]
+    )
     return (
-        f"NLPF puts in ${terms.feeder_contribution:,.2f}M with a "
-        f"{terms.feeder_liqpref_multiple:.2f}x pref, so the priority claim is "
-        f"${terms.feeder_liqpref:,.2f}M - sized to the NLP cheque, not to the feeder's own "
-        f"money. It is held ${terms.check - terms.feeder_liqpref:,.2f}M short of the full $35M "
-        f"on the principle that SB2 cannot grant a pref over shares it has already sold. [S5][S9]"
-        f"\n\nThe principle is right and the multiple is derived from it, not negotiated:\n\n"
-        f"    pref = (1 - the share SB2 sold at the portco level) x $35M\n\n"
-        f"But the share SB2 sold at the portco level is x2 = {terms.x2_portco:.1%}, to NLPI. "
-        f"x1 = {terms.x1_class_b:.1%} is NLPF's interest *inside* the fund - during the pref "
-        f"period SB2 distributes 100% of its receipts to NLPF anyway, so nothing arrives on "
-        f"account of x1 outside the pref. Netting it off is phantom.\n\n"
-        f"  at x2 = {terms.x2_portco:.1%} (correct basis)  "
-        f"{at_x2['consistent_multiple']:.2f}x = ${at_x2['consistent_pref']:,.2f}M\n"
-        f"  at x1 = {terms.x1_class_b:.1%} (as stated)      "
-        f"{at_x1['consistent_multiple']:.2f}x = ${at_x1['consistent_pref']:,.2f}M\n\n"
-        f"Holding 9.86x while NLPI takes 12.6% means the pref only clears after "
+        f"NLP's 1x is settled through two legs, both measured on the feeder's ${feeder:,.2f}M, "
+        f"and they add to 10x - the whole cheque:\n\n{table}\n\n"
+        f"That is why the pref is 9.86x and not a round 10x: SB2 cannot prefer what it no longer "
+        f"owns, so the pref is the balance after NLPI's own sales. Both legs run out at the same "
+        f"moment - NLP is whole at exactly ${terms.check:,.2f}M of exits. [S5][S9]\n\n"
+        f"The pref therefore moves with the size of the second leg, and the document gives two "
+        f"answers for it:\n\n"
+        f"  NLPI sells {terms.x1_class_b:5.1%} pro-rata (the worked exits)  ->  "
+        f"{at_x1['consistent_multiple']:.2f}x + {leg2_x1 / feeder:.2f}x\n"
+        f"  NLPI sells {terms.x2_portco:5.1%} pro-rata (x2, per [S5])       ->  "
+        f"{at_x2['consistent_multiple']:.2f}x + {leg2_x2 / feeder:.2f}x\n\n"
+        f"Either way NLP is whole at $35M; what moves is the pref. Keeping 9.86x while NLPI sells "
+        f"12.6% leaves the pref running past NLP's 1x - it clears only after "
         f"${at_x2['exits_until_pref_exhausted']:,.2f}M of exits, by which point NLP has taken "
         f"${at_x2['over_recovery']:,.2f}M more than its 1x out of Class A and Class B1 "
         f"(findings F2 and F14).\n\n"
         f"Two things about the pref itself are still open: it is senior to both existing classes "
         f"and participating (F7), and nothing routes NLPF's receipts to NLPI, which funded 90% of "
         f"the cheque (F8, the document's own open question, asked twice). [S8][S9]\n\n"
-        f"On the document's own split it now clears to the cent at the marker:\n\n"
+        f"On the document's own split it clears to the cent at the marker:\n\n"
         f"{tools.model_exits(exits=None, convention='doc_examples')}"
     )
 
