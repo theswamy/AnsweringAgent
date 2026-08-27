@@ -180,8 +180,10 @@ def _answer_liqpref(_: str) -> str:
         f"${at_x2['over_recovery']:,.2f}M more than its 1x out of Class A and Class B1 "
         f"(findings F2 and F14).\n\n"
         f"Two things about the pref itself are still open: it is senior to both existing classes "
-        f"and participating (F7), and nothing routes NLPF's receipts to NLPI, which funded 90% of "
-        f"the cheque (F8, the document's own open question, asked twice). [S8][S9]\n\n"
+        f"and participating (F7), and the route by which NLPF's receipts reach NLPI - which funded "
+        f"90% of the cheque and collects $0.49M of the first $35M - is unspecified. Both are NLP, "
+        f"so that is an intra-group transfer rather than a mismatch, but it still has to be papered "
+        f"(F8, the document's own open question, asked twice). [S8][S9]\n\n"
         f"On the document's own split it clears to the cent at the marker:\n\n"
         f"{tools.model_exits(exits=None, convention='doc_examples')}"
     )

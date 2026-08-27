@@ -49,9 +49,10 @@ def _f2() -> str:
         f"$20M WheelsEye exit: x2=12.6% gives NLPI ${struct.nlpi_direct:,.2f}M and SB2 "
         f"${struct.sb2_receipts:,.2f}M; the document's 1.4% gives NLPI "
         f"${doc.nlpi_direct:,.2f}M and SB2 ${doc.sb2_receipts:,.2f}M - a "
-        f"${struct.nlpi_direct - doc.nlpi_direct:,.2f}M difference on one exit. It also sets "
-        f"the pref multiple: at x2 the consistent pref is "
-        f"{at_x2['consistent_multiple']:.2f}x (${at_x2['consistent_pref']:,.2f}M), not 9.86x"
+        f"${struct.nlpi_direct - doc.nlpi_direct:,.2f}M difference on one exit. It also sizes "
+        f"the pref: at 12.6% the legs are {at_x2['consistent_multiple']:.2f}x + "
+        f"{at_x2['second_leg_multiple']:.2f}x, and leaving the pref at 9.86x transfers "
+        f"${at_x2['transfer_from_other_classes']:,.2f}M to NLP from Class A and the old LPs"
     )
 
 
@@ -94,10 +95,12 @@ def _f14() -> str:
     at_x1 = pref_consistency(DealTerms().x1_class_b)
     at_x2 = pref_consistency(DealTerms().x2_portco)
     return (
-        f"pref = (1 - onshore%) x $35M: {at_x1['consistent_multiple']:.2f}x at 1.4%, "
-        f"{at_x2['consistent_multiple']:.2f}x at 12.6%. Holding 9.86x while NLPI takes 12.6% "
-        f"means the pref only clears after ${at_x2['exits_until_pref_exhausted']:,.2f}M of "
-        f"exits, by which point NLP has taken ${at_x2['over_recovery']:,.2f}M more than its 1x"
+        f"the two legs always add to 10x: {at_x1['consistent_multiple']:.2f}x + "
+        f"{at_x1['second_leg_multiple']:.2f}x at a 1.4% pro-rata slice, "
+        f"{at_x2['consistent_multiple']:.2f}x + {at_x2['second_leg_multiple']:.2f}x at 12.6%. "
+        f"Holding 9.86x at 12.6% leaves the pref running to "
+        f"${at_x2['exits_until_pref_exhausted']:,.2f}M of exits and transfers "
+        f"${at_x2['transfer_from_other_classes']:,.2f}M from Class A and the old LPs"
     )
 
 
@@ -118,6 +121,18 @@ def _f7() -> str:
         f"ranking ahead of both existing classes - "
         f"{t.feeder_liqpref / t.check:.1%} of the whole NLP cheque, against "
         f"{t.feeder_contribution / t.check:.0%} of the money"
+    )
+
+
+def _f8_evidence() -> str:
+    t = DealTerms()
+    at_x1 = pref_consistency(t.x1_class_b)
+    at_x2 = pref_consistency(t.x2_portco)
+    return (
+        f"NLPI funds ${t.onshore_contribution:,.2f}M ({t.onshore_contribution / t.check:.0%} of the "
+        f"cheque) and receives ${at_x1['second_leg']:,.2f}M of the first ${t.check:,.2f}M - "
+        f"{at_x1['second_leg'] / t.check:.1%}; at a 12.6% pro-rata slice it would receive "
+        f"${at_x2['second_leg']:,.2f}M ({at_x2['second_leg'] / t.check:.1%})"
     )
 
 
@@ -159,16 +174,24 @@ FINDINGS: tuple[Finding, ...] = (
         "F2",
         "high",
         "basis",
-        "The worked exits split the buyer's cheque on x1 instead of x2",
-        "[S5] sells NLPI 12.6% (x2) of SB2's stake in each portco, and the tail in [S10] "
-        "duly splits the buyer's cheque 88/12. But the WheelsEye exit [S8] and the first "
-        "Niyo tranche [S9] split it 98.6/1.4 - that 1.4% is x1, which is a percentage of "
-        "Class B inside the fund, not a percentage of a portco position. [S8] makes the "
-        "substitution visible: it computes NLP's slice as '2.5% * x2_WE' but then prints "
-        "0.035% of WheelsEye, which is 2.5% x 1.4%. At x2 it would be 0.315%.",
+        "The same Niyo secondary splits two different ways",
+        "Consecutive tranches of the one $25M Niyo sale: [S9] pays NLPI $0.21M out of the first "
+        "$15M, which is 1.4%, and [S10] pays it 12% of the next $10M. A shareholding cannot change "
+        "between two tranches of the same sale. [S5] says NLPI owns x2 = 12.6%, and [S10] agrees; "
+        "the worked exits compute NLP's slice as '2.5% * x2_WE' and then print the value of "
+        "x1 = 1.4% - a percentage of Class B inside the fund, not of a portco position. [S8] shows "
+        "it plainly: 0.035% of WheelsEye is 2.5% x 1.4%, where 2.5% x x2 would be 0.315%.\n"
+        "Since the 27 Aug revision this also sizes the pref, because NLP's 1x is settled in two "
+        "legs that add to 10x of the feeder's $3.5M: the pref, plus whatever NLPI's own pro-rata "
+        "sales bring in. A 1.4% slice gives 9.86x + 0.14x, which is what the document states; the "
+        "12.6% slice gives 8.74x + 1.26x - the same $35M, a smaller pref. Leaving the pref at "
+        "9.86x does not change NLP's 1x, but it keeps running after NLP is whole: it clears only at "
+        "$39.49M of exits, transferring $3.85M to NLP - $1.41M from Class A and $2.44M from the "
+        "old LPs.",
         ("S5", "S8", "S9", "S10"),
-        "Restate [S8] and [S9] at 87.4/12.6 and re-derive the pref multiple with them, or "
-        "say explicitly why NLPI's onshore slice differs before and after the pref is repaid.",
+        "Settle the pro-rata slice, restate the worked exits with it, and re-derive the pref "
+        "multiple from it - or say explicitly why NLPI's slice differs before and after the pref "
+        "is repaid.",
         _f2,
     ),
     Finding(
@@ -256,19 +279,22 @@ FINDINGS: tuple[Finding, ...] = (
     ),
     Finding(
         "F8",
-        "high",
-        "structure",
-        "The document's own open question: NLPF cannot pay NLPI",
-        "Asked twice [S8][S9]: NLPF collects the pref in Singapore/Mauritius, but NLPI - "
-        "which funded $31.5M of the $35M - is the entity that needs the money. Nothing in "
-        "the document creates a path from NLPF's receipts to NLPI. This is the load-bearing "
-        "gap: the pref is the mechanism for repaying NLPI's purchase price, and it repays "
-        "the wrong entity.",
+        "medium",
+        "execution",
+        "Almost all of the 1x lands in the vehicle that funded a tenth of it",
+        "Asked twice by the document itself [S8][S9]: how does NLPI receive its returns? NLPF and "
+        "NLPI are both NLP, so this is an intra-group transfer rather than an economic mismatch - "
+        "but it carries nearly all of the money home. NLPI funds $31.5M and receives $0.49M of the "
+        "first $35M; the other $34.51M arrives in Singapore. So the route has to be papered rather "
+        "than assumed: how value leaves NLPF, the tax on each hop, and whether both vehicles carry "
+        "the same LP base. If they do, this is mechanics for 99% of the recovery. If they do not, "
+        "the allocation between the two vehicles stops being mechanics.",
         ("S5", "S8", "S9"),
-        "Resolve the return path before anything else - the alternative is to give NLPI its "
-        "1x back at the portco level (a larger onshore slice until repaid), which changes "
-        "every number in the worked exits.",
-        None,
+        "Name the route and its tax treatment, and confirm the LP bases align. Note that a larger "
+        "pro-rata slice for NLPI (F2) brings more of the recovery home directly - at 12.6% it "
+        "receives $4.41M of the first $35M instead of $0.49M - so settling F2 reduces what has to "
+        "be repatriated at all.",
+        _f8_evidence,
     ),
     Finding(
         "F9",

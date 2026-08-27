@@ -184,11 +184,11 @@ What the analysis found is written up in [`docs/DEAL_ANALYSIS.md`](docs/DEAL_ANA
 and [`docs/presentation/sb2-nlp-flow.html`](docs/presentation/sb2-nlp-flow.html) is a
 14-slide walkthrough of the flow for people who need the logic rather than the register
 (open it in a browser; arrow keys advance it).
-The headline: the document's own arithmetic is sound, but the liqpref repays NLPF
-while NLPI funded 90% of the cheque (its own open question, asked twice), and the worked
-exits sell 1.4% pro-rata where the structure says NLPI owns 12.6% — which now also sizes
-the pref, since the pref plus NLPI's pro-rata sales must add to 10x of the feeder's
-$3.5M. At 1.4% the legs are 9.86x + 0.14x; at 12.6% they are 8.74x + 1.26x.
+The headline: the document's own arithmetic is sound, but two consecutive tranches of
+the same Niyo secondary sell 1.4% and 12% pro-rata to NLPI. That percentage also sizes the
+pref, since the pref plus NLPI's own sales must add to 10x of the feeder's $3.5M — 9.86x +
+0.14x at 1.4%, 8.74x + 1.26x at 12.6% — so leaving the pref at 9.86x while NLPI sells
+12.6% transfers $3.85M to NLP from Class A and the old LPs.
 
 ```bash
 python -m unittest discover -s deal_agent/tests -t .          # 45 tests, no deps

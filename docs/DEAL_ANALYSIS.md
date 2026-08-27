@@ -79,53 +79,42 @@ document's fixed ratios legitimate:
 
 ## 3. Where it does not close
 
-Fourteen findings — twelve open (six high, three medium, three low) and two closed by
-the 27 August revision, kept below as a record. The four that block papering are set out
+Fourteen findings — twelve open (five high, four medium, three low) and two closed by
+the 27 August revision, kept below as a record. The ones to settle first are set out
 first. `python -m deal_agent findings` prints the whole register with live numbers and a
 suggested fix for each.
 
-### F8 — the pref repays the wrong entity (the document's own open question, asked twice)
+### F2 — the same secondary splits two different ways
 
-`[S8]` and `[S9]` both stop to ask: *"NLP_F then distributes pro-rata to NLP in India —
-how does the NLP India fund receive its returns?"* This is the gap everything else
-rests on. NLPI funds $31.5M of the $35M; the pref that repays that $35M is held by
-NLPF; nothing in the document creates a path from NLPF's receipts to NLPI. Until the
-return path exists there is no structure. The alternative — repay NLPI at the portco
-level by giving it an enlarged onshore slice until it is whole — changes every number
-in the worked exits.
+These are consecutive tranches of the one $25M Niyo sale, as the document sets them out:
 
-### F2 — the worked exits split the buyer's cheque on x1, not x2
+| Tranche | To SB2 | To NLPI | NLPI's slice |
+|---|---|---|---|
+| a) first $15M `[S9]` | $14.79M | $0.21M | **1.4%** |
+| b) next $10M `[S10]` | $8.80M | $1.20M | **12%** |
 
-`[S5]` sells NLPI 12.6% of each portco position and `[S10]` duly splits the cheque
-88/12. But `[S8]` and `[S9]` split it **98.6/1.4** — and 1.4% is x1, a percentage of
-Class B inside the fund, not a percentage of a portco position. `[S8]` makes the
-substitution visible: it computes NLP's slice as "2.5% × x2_WE" and then prints 0.035%
-of WheelsEye, which is 2.5% × **1.4%**. At x2 it is 0.315%.
+NLPI's shareholding cannot change between two tranches of the same sale. `[S5]` says it
+owns 12.6%; the worked exits compute NLP's slice as "2.5% × x2_WE" and then print the
+value of x1 = 1.4%, which is a percentage of Class B *inside* the fund, not of a portco
+position. On the $20M WheelsEye exit the difference is $0.28M against $2.52M to NLPI.
 
-On the $20M WheelsEye exit that is the difference between:
-
-| | NLPI (onshore) | SB2 (Mauritius) |
-|---|---|---|
-| As written `[S8]` | $0.28M | $19.72M |
-| At x2 = 12.6% | $2.52M | $17.48M |
-
-Since the revision this is also what sizes the pref, because the pref is the balance
-after NLPI's pro-rata sales:
+And it sizes the pref, because the two legs must add to 10x:
 
 | NLPI sells pro-rata | The two legs | Pref |
 |---|---|---|
 | 1.4% — the worked exits | 9.86x + 0.14x | $34.51M, as drafted |
 | 12.6% — x2, per `[S5]` | **8.74x + 1.26x** | $30.59M |
 
-Either way NLP is whole at exactly $35M. But keeping 9.86x while NLPI sells 12.6% leaves
-the pref running past that point — it clears only after $39.49M of exits, by which time
-NLP has taken **$4.49M more than its 1x**, out of Class A and the old LPs.
+Either way NLP is whole at exactly $35M. But leaving the pref at 9.86x while NLPI sells
+12.6% keeps it running after NLP is already whole: it clears only at $39.49M of exits,
+transferring **$3.85M** to NLP — $1.41M from Class A and $2.44M from the old LPs.
 
 ### F14 — the pref multiple should be drafted as a formula, not a number
 
-9.86x is not an independently negotiated term, and `[S6]` says the exact x1 and x2 will
-differ from the illustration. Every change to them moves the multiple — as does the fix
-to F8, if NLPI's 1x ends up being repaid onshore through an enlarged slice instead.
+9.86x is not an independently negotiated term — it is 10x less whatever NLPI's pro-rata
+sales bring in. `[S6]` says the exact x1 and x2 will differ from the illustration, so
+every change to them moves the multiple, as does any decision to bring more of NLPI's
+recovery home directly (F8).
 
 Draft it as an amount with its derivation — "$34.51M, being $35M less NLPI's onshore
 percentage of it" — or as a cap on aggregate priority receipts across both NLP entities,
@@ -138,6 +127,22 @@ rather than as a hard multiple on the feeder's $3.5M.
 numbers. 1.4% of Class B is 0.96% of absolute, which puts NLP's total at 13.56%, not
 14.1%. Fixing NLP's entitlement at 14.1% and NLPI's direct stake at 12.6% back-solves
 the feeder to **1.5% of absolute ≈ 2.2% of Class B**.
+
+### F8 — almost all of the 1x lands in the vehicle that funded a tenth of it
+
+Asked twice by the document itself `[S8][S9]`: *"NLP_F then distributes pro-rata to NLP in
+India — how does the NLPI fund receive its returns?"*
+
+NLPF and NLPI are both NLP, so this is an intra-group transfer rather than an economic
+mismatch. But it carries nearly all of the money home: NLPI funds **$31.5M** and receives
+**$0.49M** of the first $35M — the other $34.51M arrives in Singapore. So the route has to
+be papered rather than assumed: how value leaves NLPF, the tax on each hop, and whether
+both vehicles carry the same LP base. If they do, this is mechanics for 99% of the
+recovery. If they do not, the allocation between the two vehicles stops being mechanics.
+
+It also interacts with F2: a larger pro-rata slice for NLPI brings more of the recovery
+home directly — at 12.6% it receives $4.41M of the first $35M instead of $0.49M — so
+settling F2 reduces what has to be repatriated at all.
 
 ### Closed by the 27 August revision
 
@@ -192,12 +197,13 @@ de-risking, with this table attached — not as a neutral restructuring.
 
 ## 5. What to fix before papering
 
-1. **Resolve the NLPF → NLPI return path (F8).** Everything else is downstream.
-2. Pick one basis for each percentage, restate the worked exits at 87.4/12.6, and
-   re-derive the pref multiple with them (F2, F4, F14).
-3. Say the priority return is an aggregate $35M across both NLP entities, with the pref
-   drafted as the balance net of NLPI's onshore receipts (F5, F14).
-4. Price the onshore transfer taxes and confirm the discount survives the pricing
-   floor, then re-derive x1 and x2 from the grossed-up cheque (F10).
+1. **Settle NLPI's pro-rata slice — 1.4% or 12.6% — and re-derive the pref multiple from
+   it (F2, F4, F14).** It sets every exit split and the pref together.
+2. State the priority return as an aggregate $35M across both NLP vehicles, with the pref
+   drafted as the balance after NLPI's own sales (F5, F14).
+3. Price the onshore transfer taxes and confirm the discount survives the pricing floor,
+   then re-derive x1 and x2 from the grossed-up cheque (F10).
+4. Paper the NLPF → NLPI route and its tax treatment, and confirm the two vehicles' LP
+   bases align (F8).
 5. Attach a per-portco schedule — holding, carrying value, the 12.6% slice in shares
    and dollars, summing to $31.5M (F12).

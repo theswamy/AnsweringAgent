@@ -220,17 +220,25 @@ def pref_consistency(
     consistent = (1 - d) * terms.check
     stated = terms.feeder_liqpref
     # How much of the portfolio has to sell before the stated pref is exhausted,
-    # and what NLP has received in total by then.
+    # and what NLP has received in total by then. While the pref runs NLP takes
+    # 100% of every exit, so its receipts equal the exits.
     exits_to_exhaust = stated / (1 - d) if d < 1 else float("inf")
+    over = exits_to_exhaust - terms.check
+    # Of that over-recovery, NLP was entitled to its tail share anyway; only the
+    # balance is a transfer from Class A and the old LPs.
+    nlp_tail = derive(terms).tail_nlp_total
     return {
         "onshore_pct": d,
         "stated_pref": stated,
         "stated_multiple": terms.feeder_liqpref_multiple,
         "consistent_pref": consistent,
         "consistent_multiple": consistent / terms.feeder_contribution,
+        "second_leg": terms.check - consistent,
+        "second_leg_multiple": (terms.check - consistent) / terms.feeder_contribution,
         "exits_until_pref_exhausted": exits_to_exhaust,
         "nlp_priority_receipts": exits_to_exhaust,
-        "over_recovery": exits_to_exhaust - terms.check,
+        "over_recovery": over,
+        "transfer_from_other_classes": over * (1 - nlp_tail),
     }
 
 
