@@ -12,7 +12,7 @@ from typing import Any
 
 from . import document
 from .findings import FINDINGS, format_findings
-from .terms import PORTCOS, DealTerms, derive, nlp_returns, old_lp_tradeoff
+from .terms import PORTCOS, DealTerms, derive, nlp_returns, old_lp_tradeoff, pref_consistency
 from .waterfall import (
     DOCUMENT_EXITS,
     ExitEvent,
@@ -83,10 +83,16 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
                     "description": "'structure' splits each cheque 87.4/12.6 per x2 (default); "
                     "'doc_examples' splits it 98.6/1.4 as the worked exits in S8/S9 do.",
                 },
+                "liqpref": {
+                    "type": "number",
+                    "description": "Override the pref amount in $M. Defaults to the stated "
+                    "9.86x on $3.5M = $34.51M; 30.59 is the figure consistent with x2 = 12.6%.",
+                },
                 "count_direct_against_pref": {
                     "type": "boolean",
-                    "description": "Whether NLPI's onshore proceeds reduce NLP's $35M priority "
-                    "return. The document does not say; its examples imply false.",
+                    "description": "Net NLPI's onshore proceeds off the pref a second time. The "
+                    "9.86x sizing already nets them off once; passing true shows what "
+                    "double-netting in the drafting would cost NLP.",
                 },
             },
         },
@@ -158,6 +164,8 @@ def deal_terms() -> str:
             "nlpf_contribution_musd": terms.feeder_contribution,
             "nlpf_liqpref_multiple": terms.feeder_liqpref_multiple,
             "nlpf_liqpref_musd": terms.feeder_liqpref,
+            "nlpf_liqpref_note": "9.86x, i.e. $35M less the 1.4% NLPI takes onshore - SB2 "
+            "cannot grant a pref over shares it has already sold",
             "nlpi_onshore_musd": terms.onshore_contribution,
             "x1_pct_of_class_b": terms.x1_class_b,
             "x2_pct_of_portco_stakes": terms.x2_portco,
@@ -174,6 +182,12 @@ def deal_terms() -> str:
             "portcos": PORTCOS,
         },
         "recomputed": econ.as_dict(),
+        "pref_consistency": {
+            "at_x1_1_4_pct": pref_consistency(terms.x1_class_b),
+            "at_x2_12_6_pct": pref_consistency(terms.x2_portco),
+            "rule": "pref = (1 - NLPI's onshore share) x $35M, so the multiple is derived "
+            "from the split, not negotiated independently (findings F2, F14)",
+        },
         "recomputed_notes": {
             "class_a_profit_share": "2% commitment + 30% carry on the LPs' 98% = 31.40% of all "
             "profit above the ROC, at any profit level (single 1x hurdle, no catch-up tiers).",
@@ -188,6 +202,7 @@ def model_exits(
     exits: list[dict[str, Any]] | None = None,
     convention: str = SplitConvention.STRUCTURE.value,
     count_direct_against_pref: bool = False,
+    liqpref: float | None = None,
 ) -> str:
     events = (
         [
@@ -207,6 +222,7 @@ def model_exits(
         events,
         convention=SplitConvention(convention),
         count_direct_against_pref=count_direct_against_pref,
+        liqpref=float(liqpref) if liqpref is not None else None,
     )
     return format_result(result)
 

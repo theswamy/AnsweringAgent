@@ -5,7 +5,7 @@ Two layers, because NLP comes in through two entities [S5]:
     buyer's cheque for an SB2 portco position
         |-- NLPI's direct slice, paid onshore in India, straight to NLP
         `-- SB2's slice, paid into the fund in Mauritius, then
-                |-- 100% to NLPF until the 10x liqpref ($35M) is repaid
+                |-- 100% to NLPF until the 9.86x liqpref ($34.51M) is repaid
                 `-- thereafter Class A / Class B1 / Class B2 pari-passu
 
 The document splits that first layer two different ways - 98.6/1.4 in the
@@ -73,6 +73,7 @@ class EventDistribution:
 class WaterfallResult:
     convention: SplitConvention
     count_direct_against_pref: bool
+    liqpref: float
     events: list[EventDistribution] = field(default_factory=list)
 
     @property
@@ -105,22 +106,29 @@ def run_waterfall(
     econ: Economics | None = None,
     convention: SplitConvention = SplitConvention.STRUCTURE,
     count_direct_against_pref: bool = False,
+    liqpref: float | None = None,
 ) -> WaterfallResult:
     """Walk a sequence of exits through both layers of the waterfall.
 
-    `count_direct_against_pref` is the open question in finding F5: the document
-    never says whether the money NLPI receives onshore counts towards NLP's
-    "first 35M". Its worked exits say no - NLPI banks its slice *and* the pref
-    keeps running - so that is the default here, but the flag makes the other
-    reading, and its cost to the old LPs, computable.
+    `liqpref` overrides the pref amount, for testing a multiple other than the
+    stated 9.86x - 8.74x is the figure consistent with x2 = 12.6% (finding F2).
+
+    `count_direct_against_pref` nets NLPI's onshore receipts off the pref a
+    second time. The 9.86x sizing already nets them off once, ex ante, which is
+    what makes NLP whole at exactly $35M; setting this flag as well under-repays
+    it, and is here to show what that mis-drafting would cost (finding F5).
     """
     econ = econ or derive(terms)
     direct_pct = (
         terms.x2_portco if convention is SplitConvention.STRUCTURE else terms.x1_class_b
     )
 
-    result = WaterfallResult(convention=convention, count_direct_against_pref=count_direct_against_pref)
-    outstanding = terms.feeder_liqpref
+    outstanding = terms.feeder_liqpref if liqpref is None else liqpref
+    result = WaterfallResult(
+        convention=convention,
+        count_direct_against_pref=count_direct_against_pref,
+        liqpref=outstanding,
+    )
 
     for event in events:
         nlpi_direct = event.proceeds * direct_pct
@@ -163,8 +171,9 @@ def format_result(result: WaterfallResult) -> str:
     lines = [
         f"Convention: NLPI takes "
         f"{result.events[0].nlpi_direct / result.events[0].event.proceeds:.1%} of each cheque "
-        f"({result.convention.value}); onshore proceeds "
-        f"{'count' if result.count_direct_against_pref else 'do not count'} against the pref."
+        f"({result.convention.value}); pref ${result.liqpref:,.2f}M"
+        + (" (netted against onshore receipts a second time)" if result.count_direct_against_pref else "")
+        + "."
         if result.events
         else "No exits modelled.",
         "",

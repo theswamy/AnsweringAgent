@@ -19,7 +19,7 @@ from typing import Any, Protocol
 
 from . import tools
 from .findings import FINDINGS
-from .terms import DealTerms, derive
+from .terms import DealTerms, derive, pref_consistency
 
 DEFAULT_MODEL = os.environ.get("DEAL_AGENT_MODEL", "claude-opus-5")
 
@@ -144,17 +144,29 @@ def _answer_cap_table(_: str) -> str:
 
 def _answer_liqpref(_: str) -> str:
     terms = DealTerms()
-    result = tools.model_exits()
+    at_x1 = pref_consistency(terms.x1_class_b)
+    at_x2 = pref_consistency(terms.x2_portco)
     return (
         f"NLPF puts in ${terms.feeder_contribution:,.2f}M with a "
-        f"{terms.feeder_liqpref_multiple:.0f}x pref, so the priority claim is "
-        f"${terms.feeder_liqpref:,.2f}M - the whole NLP cheque, not the feeder's own money. "
-        f"That is the mechanism for repaying NLPI's onshore ${terms.onshore_contribution:,.2f}M "
-        f"through Mauritius, and it is the source of two of the biggest open items: the pref "
-        f"is senior to both existing classes and participating (F7), and nothing routes NLPF's "
-        f"receipts to NLPI (F8, the document's own open question, asked twice). [S5][S8][S9]\n\n"
-        f"Running the document's own exits through it:\n\n{result}\n\n"
-        f"[S9] marks the pref satisfied one exit early - see finding F3."
+        f"{terms.feeder_liqpref_multiple:.2f}x pref, so the priority claim is "
+        f"${terms.feeder_liqpref:,.2f}M - sized to the NLP cheque, not to the feeder's own "
+        f"money. It stops ${terms.check - terms.feeder_liqpref:,.2f}M short of $35M because SB2 "
+        f"cannot grant a pref over the shares it has already sold to NLPI: that slice is paid "
+        f"onshore, direct, and makes up the difference. So NLP's two entities are made whole "
+        f"together at exactly ${terms.check:,.2f}M of exits. [S5][S9]\n\n"
+        f"The multiple is therefore derived, not negotiated: pref = (1 - NLPI's onshore share) "
+        f"x $35M. At the 1.4% the document's worked exits use, that is "
+        f"{at_x1['consistent_multiple']:.2f}x. At x2 = 12.6%, which is what [S5] and [S10] say "
+        f"NLPI actually owns, it is {at_x2['consistent_multiple']:.2f}x "
+        f"(${at_x2['consistent_pref']:,.2f}M) - and holding 9.86x there means the pref only "
+        f"clears after ${at_x2['exits_until_pref_exhausted']:,.2f}M of exits, by which point NLP "
+        f"has taken ${at_x2['over_recovery']:,.2f}M more than its 1x out of Class A and Class B1 "
+        f"(findings F2 and F14).\n\n"
+        f"Two things about the pref itself are still open: it is senior to both existing classes "
+        f"and participating (F7), and nothing routes NLPF's receipts to NLPI, which funded 90% of "
+        f"the cheque (F8, the document's own open question, asked twice). [S8][S9]\n\n"
+        f"On the document's own split it now clears to the cent at the marker:\n\n"
+        f"{tools.model_exits(exits=None, convention='doc_examples')}"
     )
 
 
@@ -163,13 +175,15 @@ def _answer_worked_exits(_: str) -> str:
     doc = tools.model_exits(convention="doc_examples")
     return (
         "The document splits the buyer's cheque two different ways, so both are worth "
-        "seeing. At x2 = 12.6%, which is what [S5] and the tail in [S10] say:\n\n"
+        "seeing - and since the 9.86x pref is sized off the 1.4% version, the choice now "
+        "sets the pref too. At x2 = 12.6%, which is what [S5] and the tail in [S10] say:\n\n"
         f"{struct}\n\n"
         "As the worked exits in [S8] and [S9] actually compute it (98.6/1.4, substituting x1 "
         "for x2 - finding F2):\n\n"
         f"{doc}\n\n"
         "The second reproduces the document's $19.72M / $0.28M / $14.79M / $0.21M exactly, "
-        "which is how F2 was identified."
+        "and clears the pref to the cent at the marker; the first leaves $3.92M of pref "
+        "outstanding after the same $35M of exits (findings F2, F14)."
     )
 
 
@@ -283,6 +297,15 @@ def build_answerer(prefer_model: bool = True, verbose: bool = False) -> tuple[An
     return OfflineAnswerer(), False
 
 
+def _pref_row(onshore_pct: float) -> str:
+    check = pref_consistency(onshore_pct)
+    return (
+        f"{check['consistent_multiple']:5.2f}x = ${check['consistent_pref']:6,.2f}M   "
+        f"stated 9.86x clears after ${check['exits_until_pref_exhausted']:6,.2f}M of exits, "
+        f"over-repaying NLP by ${check['over_recovery']:.2f}M"
+    )
+
+
 def report() -> str:
     """The standing analysis: summary, numbers, worked exits, findings."""
     terms, econ = DealTerms(), derive(DealTerms())
@@ -313,6 +336,11 @@ def report() -> str:
         f"    Class B1 (old LPs)    {econ.tail_class_b1:7.1%}   ({econ.sb2_share_class_b1:.1%} of SB2's receipts)",
         f"    NLPI (direct, onshore){econ.tail_nlp_direct:7.1%}   (taken before the fund sees it)",
         f"    NLPF (Class B2)       {econ.tail_nlp_feeder:7.1%}   ({econ.sb2_share_class_b2:.1%} of SB2's receipts)",
+        "",
+        "THE PREF MULTIPLE AGAINST THE SPLIT IT IS NETTED AGAINST",
+        f"  rule: pref = (1 - NLPI's onshore share) x ${terms.check:,.2f}M",
+        f"  at x1 =  1.4% (the worked exits)   {_pref_row(terms.x1_class_b)}",
+        f"  at x2 = 12.6% (the structure)      {_pref_row(terms.x2_portco)}",
         "",
         "THE DOCUMENT'S WORKED EXITS, AS THE DOCUMENT COMPUTES THEM",
         tools.model_exits(convention="doc_examples"),

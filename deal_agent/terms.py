@@ -30,7 +30,7 @@ class DealTerms:
     check: float = 35.0
     discount: float = 0.35
     feeder_share_of_check: float = 0.10  # NLPF's slice of the $35M
-    feeder_liqpref_multiple: float = 10.0
+    feeder_liqpref_multiple: float = 9.86
     x1_class_b: float = 0.014  # "(x1=1.4%) of the Class B" bought by NLPF
     x2_portco: float = 0.126  # "(x2=12.6%) of SB2's stakes in each of the portcos"
 
@@ -63,9 +63,15 @@ class DealTerms:
 
     @property
     def feeder_liqpref(self) -> float:
-        """10x on $3.5M = $35M, i.e. the pref is sized to the whole NLP cheque,
-        not to the feeder's own money. That is the mechanism by which NLPI's
-        onshore purchase price gets repaid through the Mauritius entity."""
+        """9.86x on $3.5M = $34.51M.
+
+        The pref is sized to the NLP cheque rather than to the feeder's own
+        money - that is the mechanism by which NLPI's onshore purchase price is
+        repaid through the Mauritius entity. It stops $0.49M short of the full
+        $35M because SB2 cannot grant a pref over the shares it has already sold
+        to NLPI: that slice of every exit is paid onshore, direct, and makes up
+        the difference. See `pref_consistency`.
+        """
         return self.feeder_contribution * self.feeder_liqpref_multiple
 
 
@@ -179,6 +185,45 @@ def derive(terms: DealTerms = DealTerms()) -> Economics:
         sb2_share_class_b1=tail_class_b1 / sb2_share,
         sb2_share_class_b2=tail_nlp_feeder / sb2_share,
     )
+
+
+def pref_consistency(
+    onshore_pct: float | None = None,
+    terms: DealTerms = DealTerms(),
+) -> dict[str, float]:
+    """Check the pref multiple against the onshore slice it is netted against.
+
+    SB2 can only grant a pref over what SB2 still owns, so if NLPI takes `d` of
+    every exit onshore, the pref that repays NLP exactly its $35M and not a
+    dollar more is
+
+        pref = (1 - d) x $35M
+
+    at which point NLP's two entities are made whole together: it has taken
+    `d * X` onshore and `(1 - d) * X` through the pref, so it is whole at
+    X = $35M of exits and the pref is exhausted at the same moment.
+
+    That makes the multiple a *derived* number, not an independent term. At
+    d = 1.4% it is 9.86x, which is what the document now says. At d = x2 = 12.6%
+    - which is what the structure says NLPI actually owns - it is 8.74x, and the
+    stated 9.86x over-repays NLP out of Class A and Class B1.
+    """
+    d = terms.x1_class_b if onshore_pct is None else onshore_pct
+    consistent = (1 - d) * terms.check
+    stated = terms.feeder_liqpref
+    # How much of the portfolio has to sell before the stated pref is exhausted,
+    # and what NLP has received in total by then.
+    exits_to_exhaust = stated / (1 - d) if d < 1 else float("inf")
+    return {
+        "onshore_pct": d,
+        "stated_pref": stated,
+        "stated_multiple": terms.feeder_liqpref_multiple,
+        "consistent_pref": consistent,
+        "consistent_multiple": consistent / terms.feeder_contribution,
+        "exits_until_pref_exhausted": exits_to_exhaust,
+        "nlp_priority_receipts": exits_to_exhaust,
+        "over_recovery": exits_to_exhaust - terms.check,
+    }
 
 
 def old_lp_tradeoff(

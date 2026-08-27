@@ -4,7 +4,7 @@
     python -m deal_agent chat            # interactive, keeps context
     python -m deal_agent report          # the standing analysis
     python -m deal_agent findings --severity high
-    python -m deal_agent exits --exit Freo:50:900 --convention structure
+    python -m deal_agent exits --exit Freo:50:900 --convention structure --liqpref 30.59
     python -m deal_agent outcome 180
     python -m deal_agent doc S8
 """
@@ -57,6 +57,14 @@ def main(argv: list[str] | None = None) -> int:
         choices=[c.value for c in SplitConvention],
     )
     exits_cmd.add_argument(
+        "--liqpref",
+        type=float,
+        default=None,
+        metavar="MUSD",
+        help="Override the pref amount, $M. Default is the stated 9.86x = 34.51; "
+        "30.59 is the 8.74x figure consistent with x2 = 12.6%.",
+    )
+    exits_cmd.add_argument(
         "--pref-counts-onshore",
         action="store_true",
         help="Count NLPI's onshore proceeds against NLP's $35M priority return (see F5).",
@@ -84,6 +92,7 @@ def main(argv: list[str] | None = None) -> int:
                 exits=[_parse_exit(spec) for spec in args.exits] or None,
                 convention=args.convention,
                 count_direct_against_pref=args.pref_counts_onshore,
+                liqpref=args.liqpref,
             )
         )
         return 0

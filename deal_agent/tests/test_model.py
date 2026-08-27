@@ -13,7 +13,13 @@ import unittest
 
 from deal_agent import document, tools
 from deal_agent.findings import BY_ID, FINDINGS
-from deal_agent.terms import DealTerms, derive, nlp_returns, old_lp_tradeoff
+from deal_agent.terms import (
+    DealTerms,
+    derive,
+    nlp_returns,
+    old_lp_tradeoff,
+    pref_consistency,
+)
 from deal_agent.waterfall import (
     DOCUMENT_EXITS,
     ExitEvent,
@@ -83,10 +89,14 @@ class TestCapTable(unittest.TestCase):
 
 
 class TestLiqPref(unittest.TestCase):
-    def test_10x_on_3_5m_sizes_the_pref_to_the_whole_cheque(self):
+    def test_pref_is_the_cheque_net_of_the_onshore_slice(self):
+        """[S5] - 9.86x on $3.5M, i.e. $35M less the 1.4% NLPI takes onshore."""
         self.assertAlmostEqual(TERMS.feeder_contribution, 3.5)
         self.assertAlmostEqual(TERMS.onshore_contribution, 31.5)
-        self.assertAlmostEqual(TERMS.feeder_liqpref, TERMS.check)
+        self.assertAlmostEqual(TERMS.feeder_liqpref, 34.51, places=6)
+        self.assertAlmostEqual(
+            TERMS.feeder_liqpref, (1 - TERMS.x1_class_b) * TERMS.check, places=6
+        )
 
     def test_document_exit_a_reproduced_exactly(self):
         """[S8] - SB2 $19.72M, NLP $0.28M, all of SB2's share to the pref."""
@@ -106,22 +116,46 @@ class TestLiqPref(unittest.TestCase):
         self.assertAlmostEqual(dist.sb2_receipts, 14.79, places=2)
         self.assertAlmostEqual(dist.nlpi_direct, 0.21, places=2)
 
-    def test_pref_is_not_satisfied_where_the_document_says_it_is(self):
-        """F3 - $0.49M short on the document's own split, $4.41M short at x2."""
-        as_written = run_waterfall(
-            DOCUMENT_EXITS[:2], convention=SplitConvention.DOC_EXAMPLES
-        )
-        self.assertFalse(as_written.pref_satisfied)
-        self.assertAlmostEqual(as_written.pref_outstanding, 0.49, places=2)
-
-        consistent = run_waterfall(DOCUMENT_EXITS[:2])
-        self.assertFalse(consistent.pref_satisfied)
-        self.assertAlmostEqual(consistent.pref_outstanding, 4.41, places=2)
-
-    def test_pref_is_satisfied_within_the_third_tranche(self):
-        result = run_waterfall(DOCUMENT_EXITS)
+    def test_marker_is_now_exact_on_the_documents_own_split(self):
+        """F3, closed - (19.72 + 14.79) / 3.5 = 9.86 clears the pref to the cent,
+        and repays NLP exactly its $35M across both entities."""
+        result = run_waterfall(DOCUMENT_EXITS[:2], convention=SplitConvention.DOC_EXAMPLES)
         self.assertTrue(result.pref_satisfied)
-        self.assertAlmostEqual(result.totals["nlp_via_pref"], TERMS.check, places=6)
+        self.assertAlmostEqual(result.totals["nlp_via_pref"], 34.51, places=6)
+        self.assertAlmostEqual(result.totals["nlp_total"], TERMS.check, places=6)
+        self.assertEqual(result.totals["class_a"], 0.0)
+
+    def test_the_same_exits_leave_the_pref_outstanding_at_x2(self):
+        """F2/F14 - the 9.86x sizing assumes a 1.4% onshore slice."""
+        result = run_waterfall(DOCUMENT_EXITS[:2])
+        self.assertFalse(result.pref_satisfied)
+        self.assertAlmostEqual(result.pref_outstanding, 3.92, places=2)
+        # NLP is still repaid exactly its 1x at $35M of exits - it is the pref
+        # running past that point, not the repayment, that costs the other classes.
+        self.assertAlmostEqual(result.totals["nlp_total"], TERMS.check, places=6)
+
+    def test_pref_multiple_is_a_function_of_the_onshore_slice(self):
+        at_x1 = pref_consistency(TERMS.x1_class_b)
+        self.assertAlmostEqual(at_x1["consistent_multiple"], 9.86, places=6)
+        self.assertAlmostEqual(at_x1["over_recovery"], 0.0, places=6)
+
+        at_x2 = pref_consistency(TERMS.x2_portco)
+        self.assertAlmostEqual(at_x2["consistent_multiple"], 8.74, places=6)
+        self.assertAlmostEqual(at_x2["consistent_pref"], 30.59, places=6)
+        self.assertAlmostEqual(at_x2["over_recovery"], 4.49, places=2)
+
+    def test_an_8_74x_pref_clears_exactly_at_x2(self):
+        result = run_waterfall(DOCUMENT_EXITS[:2], liqpref=30.59)
+        self.assertTrue(result.pref_satisfied)
+        self.assertAlmostEqual(result.totals["nlp_total"], TERMS.check, places=6)
+
+    def test_pref_is_satisfied_across_the_document_exits_either_way(self):
+        for convention in SplitConvention:
+            result = run_waterfall(DOCUMENT_EXITS, convention=convention)
+            self.assertTrue(result.pref_satisfied, convention)
+            self.assertAlmostEqual(
+                result.totals["nlp_via_pref"], TERMS.feeder_liqpref, places=6
+            )
 
     def test_tail_shares_apply_once_the_pref_is_repaid(self):
         """[S10] - "from now on for all subsequent distributions".
@@ -220,6 +254,17 @@ class TestDocumentAndFindings(unittest.TestCase):
 
     def test_section_id_lookup(self):
         self.assertIn("WheelsEye at $800M", tools.read_document("S8"))
+
+    def test_source_text_carries_the_9_86x_restatement(self):
+        """If the document is revised again, the model must not drift from it."""
+        self.assertIn("9.86", document.BY_ID["S5"].text)
+        self.assertIn("(19.72+14.79)/3.5 = 9.86", document.BY_ID["S9"].text)
+
+    def test_closed_findings_are_kept_with_their_evidence(self):
+        closed = [f for f in FINDINGS if f.status == "closed"]
+        self.assertEqual({f.id for f in closed}, {"F3", "F5"})
+        for finding in closed:
+            self.assertIn("CLOSED", finding.title)
 
 
 class TestTools(unittest.TestCase):

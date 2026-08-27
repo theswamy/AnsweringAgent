@@ -1,7 +1,7 @@
 # SB2 / NLP secondary — analysis
 
 Analysis of the transaction document (Google Doc `1vepHdrEY2IuuM9TjwH0ced5FOrRerA0ugtr0gxD8tFU`,
-read 2026-08-27). Section ids `[S1]`–`[S10]` refer to `deal_agent/document.py`, which
+as revised 2026-08-27 — the liqpref restated from 10x to 9.86x). Section ids `[S1]`–`[S10]` refer to `deal_agent/document.py`, which
 holds the document verbatim; every number below is computed by `deal_agent` and
 covered by its tests.
 
@@ -18,13 +18,28 @@ part of the cheque can move offshore-to-offshore, it arrives through two entitie
 
 | Entity | Amount | What it buys | Where it sits |
 |---|---|---|---|
-| NLPF (Singapore feeder) | $3.5M (10%) | x1 = 1.4% of Class B, with a **10x liqpref** | Primary capital into SB2 Mauritius |
+| NLPF (Singapore feeder) | $3.5M (10%) | x1 = 1.4% of Class B, with a **9.86x liqpref** | Primary capital into SB2 Mauritius |
 | NLPI (India fund) | $31.5M (90%) | x2 = 12.6% of SB2's stake in each portco | Direct onshore shareholdings |
 
 So $3.5M is primary money into the fund and $31.5M is a secondary purchase of assets
-*from* the fund. The 10x pref on the feeder is not a return expectation — it is sized
-at exactly $35M, i.e. the whole cheque, and exists to route NLPI's onshore purchase
-price back through Mauritius.
+*from* the fund. The pref on the feeder is not a return expectation — it is sized to the
+whole NLP cheque and exists to route NLPI's onshore purchase price back through
+Mauritius.
+
+**The 9.86x is a derived number.** 9.86 × $3.5M = $34.51M, which is $35M less the 1.4%
+NLPI takes onshore — SB2 cannot grant a preference over shares it has already sold, so
+the pref covers only the part of each exit SB2 still owns, and the remainder reaches NLP
+directly in India. The general rule is
+
+```
+pref = (1 − NLPI's onshore share) × $35M
+```
+
+which makes both conditions coincide: NLP is whole at exactly $35M of exits, and the
+pref is exhausted at the same moment. `[S9]` derives 9.86 as (19.72 + 14.79) / 3.5,
+which reads as though it came out of the two illustrative exits — it did not, and the
+rule holds for any exit sequence. It does, however, hardcode a **1.4%** onshore slice
+(see F2 and F14).
 
 ## 2. The document's arithmetic checks out
 
@@ -55,9 +70,10 @@ document's fixed ratios legitimate:
 
 ## 3. Where it does not close
 
-Thirteen findings — seven high severity, three medium, three low. The five that block
-papering are set out first. `python -m deal_agent findings` prints the whole register
-with live numbers and a suggested fix for each.
+Fourteen findings — twelve open (six high, three medium, three low) and two closed by
+the 27 August revision, kept below as a record. The four that block papering are set out
+first. `python -m deal_agent findings` prints the whole register with live numbers and a
+suggested fix for each.
 
 ### F8 — the pref repays the wrong entity (the document's own open question, asked twice)
 
@@ -84,14 +100,23 @@ On the $20M WheelsEye exit that is the difference between:
 | As written `[S8]` | $0.28M | $19.72M |
 | At x2 = 12.6% | $2.52M | $17.48M |
 
-### F3 — "LIQPREF SATISFIED" is marked before the pref is repaid
+Since the revision this is the fault line everything else hangs on, because the pref
+multiple is netted against the same percentage:
 
-`[S9]` declares the pref satisfied after SB2 has received $19.72M + $14.79M = **$34.51M**
-against a $35M pref — $0.49M short on the document's own numbers. On the x2-consistent
-split, SB2 receives only $30.59M of the same $35M of exits and **$4.41M is still
-outstanding**, so the tail in `[S10]` would begin part-way through the next $10M
-tranche, not at the start of it. The straddling tranche has to be split; the absolute
-31.4 / 54.5 / 14.1 shares only hold on distributions that fall entirely after the pref.
+| Onshore slice | Consistent pref | Holding 9.86x anyway |
+|---|---|---|
+| 1.4% — the worked exits | **9.86x** = $34.51M | correct; NLP whole at exactly $35M |
+| 12.6% — the structure `[S5][S10]` | **8.74x** = $30.59M | pref clears only after $39.49M of exits, over-repaying NLP by **$4.49M** out of Class A and Class B1 |
+
+### F14 — the pref multiple should be drafted as a formula, not a number
+
+9.86x is not an independently negotiated term, and `[S6]` says the exact x1 and x2 will
+differ from the illustration. Every change to them moves the multiple. Fixing 9.86x in
+the documents while x2 settles at 12.6% is the $4.49M above.
+
+Draft it as an amount with its derivation — "$34.51M, being $35M less NLPI's onshore
+percentage of it" — or as a cap on aggregate priority receipts across both NLP entities,
+rather than as a hard multiple on the feeder's $3.5M.
 
 ### F4 — x1 appears in three different denominators
 
@@ -101,20 +126,28 @@ numbers. 1.4% of Class B is 0.96% of absolute, which puts NLP's total at 13.56%,
 14.1%. Fixing NLP's entitlement at 14.1% and NLPI's direct stake at 12.6% back-solves
 the feeder to **1.5% of absolute ≈ 2.2% of Class B**.
 
-### F5 — does NLPI's onshore money count towards "the first 35M"?
+### Closed by the 27 August revision
 
-`[S4]` says the first $35M goes to NLP. The worked exits instead run the $35M pref
-purely through SB2's receipts while NLPI separately banks its slice of every cheque —
-so NLP is made whole on more than $35M before the tail starts. Over the document's
-own $45M of exits NLP receives **$40.74M** on that reading and **$36.41M** if onshore
-proceeds count against the pref. The difference comes straight out of Class A and
-Class B1, and on a larger first exit it is not a rounding matter.
+**F3 — the pref now clears exactly at the marker.** Before the revision, `[S9]` declared
+the pref satisfied after SB2 had received $19.72M + $14.79M = $34.51M against a $35M
+pref — $0.49M short. Resizing to 9.86x makes the marker exact on the document's own
+split: the pref is exhausted to the cent and NLP has been repaid exactly $35.00M across
+both entities. The reasoning is sound. What survives is conditional rather than
+arithmetic, and it is F2.
+
+**F5 — "the first 35M" is now measured across both entities.** The open question was
+whether NLPI's onshore receipts counted towards NLP's first $35M. The sizing answers it:
+they do, by being netted off the pref ex ante. One drafting point remains — state the
+priority return as an aggregate $35M across NLPF and NLPI, with the pref expressed as
+the balance after NLPI's onshore receipts, so the netting is explicit and cannot be
+applied twice. Netting it twice would leave NLP $0.48M short of its 1x and start the
+tail early.
 
 ### The rest
 
 | | |
 |---|---|
-| **F7** | The 10x pref is a **$35M senior claim funded with $3.5M**, ranking ahead of both existing classes, and it is participating — `[S10]` leaves Class B2 sharing in the tail after repayment. Needs to be stated as such, and consented to. |
+| **F7** | The 9.86x pref is a **$34.51M senior claim funded with $3.5M**, ranking ahead of both existing classes, and it is participating — `[S10]` leaves Class B2 sharing in the tail after repayment. Needs to be stated as such, and consented to. |
 | **F10** | $31.5M buys Indian portco shares from a Mauritius fund at a discount to carrying value. Fair-value pricing floor on the inbound leg, capital-gains withholding at the SB2 level, and `[S6]` only *assumes* the leakage is grossed up — yet that gross-up determines x2, and therefore every exit split. |
 | **F9** | The pro-rata exit undertaking `[S7]` needs SHA amendments at the India-domiciled portcos too, not only the Delaware ones, and engages other shareholders' ROFR / tag / drag rights and IPO lock-ups. |
 | **F6** | `[S6]` assumes both classes are "whole", but the $35M that makes that true is paid to Class B. Class A's 2% of the remaining ROC — $0.70M — has no source. |
@@ -145,11 +178,11 @@ de-risking, with this table attached — not as a neutral restructuring.
 ## 5. What to fix before papering
 
 1. **Resolve the NLPF → NLPI return path (F8).** Everything else is downstream.
-2. Pick one basis for each percentage and restate the worked exits at 87.4/12.6 (F2, F4).
-3. Say whether the $35M priority return is measured across both NLP entities (F5).
-4. Re-size the illustrative exits so the pref genuinely clears, and show the split
-   transition tranche (F3).
-5. Price the onshore transfer taxes and confirm the discount survives the pricing
+2. Pick one basis for each percentage, restate the worked exits at 87.4/12.6, and
+   re-derive the pref multiple with them (F2, F4, F14).
+3. Say the priority return is an aggregate $35M across both NLP entities, with the pref
+   drafted as the balance net of NLPI's onshore receipts (F5, F14).
+4. Price the onshore transfer taxes and confirm the discount survives the pricing
    floor, then re-derive x1 and x2 from the grossed-up cheque (F10).
-6. Attach a per-portco schedule — holding, carrying value, the 12.6% slice in shares
+5. Attach a per-portco schedule — holding, carrying value, the 12.6% slice in shares
    and dollars, summing to $31.5M (F12).

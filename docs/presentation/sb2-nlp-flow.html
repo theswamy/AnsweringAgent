@@ -1,0 +1,953 @@
+<title>How the Money Moves</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --paper:      #f1f4f4;
+    --card:       #ffffff;
+    --rule:       #d5dcdd;
+    --rule-soft:  #e6eaea;
+    --ink:        #111a1c;
+    --ink-soft:   #3a4a50;
+    --muted:      #5f7278;
+    --accent:     #0d6068;
+    --accent-dim: #dceceb;
+    --copper:     #96501f;
+    --copper-dim: #f4e9df;
+    --alert:      #a1261b;
+    --a-fill:     #0d6068;
+    --b1-fill:    #7fa6a6;
+    --nlp-fill:   #96501f;
+    --shadow:     0 1px 2px rgba(17, 26, 28, 0.06);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #0b1214;
+      --card:       #121a1d;
+      --rule:       #263539;
+      --rule-soft:  #1a2427;
+      --ink:        #e4eaea;
+      --ink-soft:   #bdcacd;
+      --muted:      #8a9da3;
+      --accent:     #5ecacd;
+      --accent-dim: #10292b;
+      --copper:     #d8955f;
+      --copper-dim: #2a1e14;
+      --alert:      #e8756a;
+      --a-fill:     #5ecacd;
+      --b1-fill:    #40636a;
+      --nlp-fill:   #d8955f;
+      --shadow:     none;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #0b1214;
+    --card:       #121a1d;
+    --rule:       #263539;
+    --rule-soft:  #1a2427;
+    --ink:        #e4eaea;
+    --ink-soft:   #bdcacd;
+    --muted:      #8a9da3;
+    --accent:     #5ecacd;
+    --accent-dim: #10292b;
+    --copper:     #d8955f;
+    --copper-dim: #2a1e14;
+    --alert:      #e8756a;
+    --a-fill:     #5ecacd;
+    --b1-fill:    #40636a;
+    --nlp-fill:   #d8955f;
+    --shadow:     none;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============ chrome ============ */
+
+  .rail {
+    position: fixed;
+    left: 0; right: 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem clamp(1rem, 3vw, 2.25rem);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--paper);
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(6px);
+    z-index: 10;
+  }
+  .rail-top { top: 0; border-bottom: 1px solid var(--rule-soft); }
+  .rail-bottom { bottom: 0; border-top: 1px solid var(--rule-soft); }
+  .rail .deal { color: var(--accent); }
+  .rail .spacer { flex: 1; }
+
+  .dots { display: flex; gap: 5px; flex-wrap: wrap; }
+  .dot {
+    width: 22px; height: 4px;
+    border: none; padding: 0;
+    background: var(--rule);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background 140ms ease;
+  }
+  .dot[aria-current="true"] { background: var(--accent); }
+  .dot:hover { background: var(--ink-soft); }
+
+  .nav { display: flex; gap: 0.4rem; }
+  .nav button {
+    font-family: inherit;
+    font-size: 0.7rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 0.3rem 0.7rem;
+    cursor: pointer;
+  }
+  .nav button:hover { border-color: var(--accent); color: var(--accent); }
+  .nav button:disabled { opacity: 0.35; cursor: default; }
+
+  .counter { font-variant-numeric: tabular-nums; }
+
+  /* ============ slides ============ */
+
+  .deck { position: relative; }
+
+  .slide {
+    display: grid;
+    min-height: 100vh;
+    padding: 5rem clamp(1.25rem, 5vw, 3rem) 5.5rem;
+    align-content: center;
+    justify-items: start;
+    row-gap: 1.5rem;
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+  body.deck-ready .slide { display: none; }
+  body.deck-ready .slide[data-active="true"] { display: grid; }
+
+  .kicker {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0;
+  }
+
+  h1 {
+    font-family: Spectral, Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(2.6rem, 7vw, 4.6rem);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  h2 {
+    font-family: Spectral, Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(1.7rem, 4.2vw, 2.6rem);
+    line-height: 1.12;
+    letter-spacing: -0.015em;
+    margin: 0;
+    max-width: 30ch;
+    text-wrap: balance;
+  }
+
+  .lede {
+    font-family: Spectral, Georgia, serif;
+    font-size: clamp(1.05rem, 2.1vw, 1.35rem);
+    line-height: 1.5;
+    color: var(--ink-soft);
+    margin: 0;
+    max-width: 58ch;
+  }
+
+  p { margin: 0; max-width: 68ch; }
+  .body { color: var(--ink-soft); max-width: 66ch; }
+  strong { font-weight: 600; color: var(--ink); }
+  em { font-style: italic; }
+
+  .mono, .fig {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sid {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.76em;
+    color: var(--accent);
+    background: var(--accent-dim);
+    border-radius: 3px;
+    padding: 0.1em 0.34em;
+    white-space: nowrap;
+  }
+
+  .quote {
+    font-family: Spectral, Georgia, serif;
+    font-style: italic;
+    font-size: clamp(1.15rem, 2.6vw, 1.6rem);
+    line-height: 1.42;
+    color: var(--ink);
+    border-left: 2px solid var(--accent);
+    padding: 0.15rem 0 0.15rem 1.15rem;
+    margin: 0;
+    max-width: 46ch;
+  }
+  .quote cite {
+    display: block;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-style: normal;
+    font-size: 0.68rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 0.7rem;
+  }
+
+  /* ============ stat tiles ============ */
+
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.75rem;
+    width: 100%;
+  }
+  .tile {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 0.85rem 0.95rem;
+    box-shadow: var(--shadow);
+    display: grid;
+    row-gap: 0.15rem;
+  }
+  .tile .k {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.63rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .tile .v {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 1.45rem;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+  .tile .n { font-size: 0.78rem; color: var(--muted); line-height: 1.35; }
+  .tile.lead { border-color: var(--accent); }
+  .tile.lead .v { color: var(--accent); }
+
+  /* ============ hero figure ============ */
+
+  .hero-fig {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: clamp(1rem, 3vw, 2.25rem);
+    width: 100%;
+  }
+  .hero-num {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(3.2rem, 11vw, 7rem);
+    font-weight: 500;
+    letter-spacing: -0.045em;
+    line-height: 0.9;
+    color: var(--accent);
+  }
+  .hero-num small { font-size: 0.36em; letter-spacing: 0; color: var(--muted); display: block; margin-top: 0.5rem; }
+
+  /* ============ chain ============ */
+
+  .chain { display: grid; row-gap: 0.55rem; width: 100%; max-width: 780px; }
+  .chain-row {
+    display: grid;
+    grid-template-columns: 1.6rem 1fr auto;
+    align-items: baseline;
+    gap: 0.9rem;
+    padding: 0.7rem 0.95rem;
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .chain-row .step {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.72rem;
+    color: var(--accent);
+  }
+  .chain-row .what { font-size: 0.95rem; color: var(--ink-soft); }
+  .chain-row .val {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 1.1rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .chain-row.final { border-color: var(--accent); background: var(--accent-dim); }
+  .chain-row.final .val { color: var(--accent); }
+
+  /* ============ split bars ============ */
+
+  .bar-block { width: 100%; display: grid; row-gap: 0.5rem; max-width: 880px; }
+  .bar-label {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .bar { display: flex; height: 3.1rem; border-radius: 3px; overflow: hidden; border: 1px solid var(--rule); }
+  .seg {
+    display: grid;
+    align-content: center;
+    padding: 0 0.6rem;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--paper);
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .seg span { font-size: 0.62rem; letter-spacing: 0.07em; text-transform: uppercase; opacity: 0.85; font-weight: 400; }
+  .seg.a   { background: var(--a-fill); }
+  .seg.b   { background: var(--b1-fill); }
+  .seg.b1  { background: var(--b1-fill); }
+  .seg.nlp { background: var(--nlp-fill); }
+  .seg.a, .seg.nlp { color: var(--paper); }
+
+  /* ============ tables ============ */
+
+  .scroller { overflow-x: auto; width: 100%; border: 1px solid var(--rule); border-radius: 4px; background: var(--card); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+  th, td { text-align: left; padding: 0.55rem 0.95rem; border-top: 1px solid var(--rule-soft); }
+  thead th {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.64rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    border-top: none;
+  }
+  td.f, th.f {
+    text-align: right;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  td.lead { font-weight: 500; }
+  tr.total td { border-top: 1px solid var(--rule); font-weight: 600; }
+  td.good { color: var(--accent); }
+  td.warn { color: var(--copper); }
+
+  /* ============ diagram ============ */
+
+  figure { margin: 0; width: 100%; display: grid; row-gap: 0.8rem; }
+  .frame {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1rem;
+    overflow-x: auto;
+  }
+  figure svg { width: 100%; height: auto; display: block; color: var(--ink-soft); min-width: 560px; }
+  .edge-alert { stroke: var(--alert); }
+  .mark-alert, .text-alert { fill: var(--alert); }
+  figcaption { font-size: 0.86rem; color: var(--muted); max-width: 74ch; line-height: 1.5; }
+
+  /* ============ callouts ============ */
+
+  .note {
+    border-left: 2px solid var(--copper);
+    background: var(--copper-dim);
+    padding: 0.75rem 1rem;
+    border-radius: 0 3px 3px 0;
+    font-size: 0.94rem;
+    color: var(--ink);
+    max-width: 68ch;
+  }
+  .note b {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--copper);
+    display: block;
+    margin-bottom: 0.2rem;
+  }
+
+  .formula {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: clamp(0.95rem, 2.4vw, 1.35rem);
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1rem 1.15rem;
+    letter-spacing: -0.01em;
+    overflow-x: auto;
+    width: 100%;
+  }
+  .formula em { font-style: normal; color: var(--accent); }
+
+  ol.fixes { margin: 0; padding: 0; list-style: none; counter-reset: fx; display: grid; row-gap: 0.6rem; width: 100%; max-width: 780px; }
+  ol.fixes li {
+    counter-increment: fx;
+    display: grid;
+    grid-template-columns: 1.7rem 1fr;
+    gap: 0.8rem;
+    align-items: baseline;
+    font-size: 0.98rem;
+  }
+  ol.fixes li::before {
+    content: counter(fx);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.75rem;
+    color: var(--accent);
+    border-bottom: 1px solid var(--accent);
+    text-align: center;
+  }
+  ol.fixes .ref { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.72rem; color: var(--muted); }
+
+  .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; width: 100%; }
+
+  /* ============ step reveals ============ */
+
+  body.deck-ready [data-step] { opacity: 0; transform: translateY(6px); transition: opacity 200ms ease, transform 200ms ease; }
+  body.deck-ready [data-step].shown { opacity: 1; transform: none; }
+  svg [data-step] { transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-step] { transition: none; transform: none; }
+  }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  @media (max-width: 640px) {
+    .hero-fig { grid-template-columns: 1fr; }
+    .rail-bottom .dots { display: none; }
+  }
+</style>
+
+<header class="rail rail-top">
+  <span class="deal">SB2 / NLP secondary</span>
+  <span class="spacer"></span>
+  <span>How the money moves</span>
+</header>
+
+<main class="deck" id="deck">
+
+  <!-- 1 -->
+  <section class="slide" data-title="Cover">
+    <p class="kicker">Transaction walkthrough · 27 August 2026</p>
+    <h1>How the money moves</h1>
+    <p class="lede">NLP is buying $35M of exposure to SB2 from the existing LPs. This is the
+      flow that results — where each dollar of every future exit goes, in what order, and
+      which single number the whole structure still turns on.</p>
+    <p class="body mono" style="font-size:0.8rem">Arrow keys or space to advance · 14 slides</p>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide" data-title="The fund today">
+    <p class="kicker">Where we start</p>
+    <h2>A $45.6M fund carried at $360M, with $35M of capital still to return</h2>
+    <div class="tiles">
+      <div class="tile"><span class="k">Fund size</span><span class="v">$45.61M</span><span class="n">GP 2% · LP 98%</span></div>
+      <div class="tile"><span class="k">Distributed</span><span class="v">$11.0M</span><span class="n">to date</span></div>
+      <div class="tile"><span class="k">ROC to go</span><span class="v">$35.0M</span><span class="n">before carry bites</span></div>
+      <div class="tile lead"><span class="k">Current NAV</span><span class="v">$360M</span><span class="n">carry 30% above ROC</span></div>
+    </div>
+    <div class="bar-block" data-step="1">
+      <span class="bar-label">Who owns the $325M of profit above the ROC</span>
+      <div class="bar">
+        <div class="seg a" style="width:31.4%">31.4%<span>Class A · GP</span></div>
+        <div class="seg b" style="width:68.6%">68.6%<span>Class B · LPs</span></div>
+      </div>
+    </div>
+    <p class="body" data-step="2">The GP's 31.4% is its 2% commitment plus 30% carry on the LPs' 98% —
+      <strong>and it is 31.4% at any profit level</strong>, because there is one 1x hurdle and no
+      catch-up tiers. That is what lets the rest of this deck use flat ratios instead of a tiered
+      waterfall. <span class="sid">S1</span> <span class="sid">S2</span></p>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide" data-title="The ask">
+    <p class="kicker">What NLP wants</p>
+    <blockquote class="quote">“NLP would like to purchase $35M worth of equity from the ClassB
+      shareholders at a 35% discount — provided they get their 1x back and subsequently
+      participate pari-passu with other ClassB shareholders.”
+      <cite>Source document, section S3</cite></blockquote>
+    <p class="body" data-step="1">Three things are being asked for at once, and each one shapes the
+      flow: a <strong>discount</strong> (how much they get), <strong>1x back first</strong> (when they
+      get it), and <strong>pari-passu after</strong> (what happens once they are whole).</p>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide" data-title="Pricing chain">
+    <p class="kicker">Step 1 · How the discount becomes a percentage</p>
+    <h2>$35M at a 35% discount buys 14.1% of all future profit</h2>
+    <div class="chain">
+      <div class="chain-row" data-step="1"><span class="step">1</span><span class="what">Profit above the ROC — the pool being split</span><span class="val">$325.00M</span></div>
+      <div class="chain-row" data-step="2"><span class="step">2</span><span class="what">…less the GP's 31.4%, plus the LPs' unreturned capital = <strong>LP NAV</strong></span><span class="val">$257.25M</span></div>
+      <div class="chain-row" data-step="3"><span class="step">3</span><span class="what">$35M as a share of that LP NAV</span><span class="val">13.6%</span></div>
+      <div class="chain-row" data-step="4"><span class="step">4</span><span class="what">…grossed up for the 35% discount — what NLP actually gets of the LP</span><span class="val">20.9%</span></div>
+      <div class="chain-row final" data-step="5"><span class="step">5</span><span class="what">…applied to Class B's 68.6% of profit = <strong>NLP's share of everything</strong></span><span class="val">14.1%</span></div>
+    </div>
+    <p class="body" data-step="6">The document states 13%, 20% and 14.1%; recomputed they are 13.6%,
+      20.9% and 14.4%. Close enough to illustrate, too loose to sign — the 14.1% is an operative
+      sharing ratio. <span class="sid">S3</span> <span class="sid">S4</span></p>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide" data-title="The resulting split">
+    <p class="kicker">Step 2 · The new sharing ratio</p>
+    <h2>NLP's slice is carved out of Class B. Class A is untouched.</h2>
+    <div class="bar-block">
+      <span class="bar-label">Before — every dollar of profit</span>
+      <div class="bar">
+        <div class="seg a" style="width:31.4%">31.4%<span>Class A</span></div>
+        <div class="seg b" style="width:68.6%">68.6%<span>Class B</span></div>
+      </div>
+    </div>
+    <div class="bar-block" data-step="1">
+      <span class="bar-label">After — once NLP has its $35M back</span>
+      <div class="bar">
+        <div class="seg a" style="width:31.4%">31.4%<span>Class A</span></div>
+        <div class="seg b1" style="width:54.5%">54.5%<span>Class B1 · old LPs</span></div>
+        <div class="seg nlp" style="width:14.1%">14.1%<span>NLP</span></div>
+      </div>
+    </div>
+    <p class="body" data-step="2">Because the secondary is sold out of Class B, the GP is not diluted:
+      the entire 14.1% comes out of the LPs' 68.6%. This is why the fund can pay Class A 31.4% of
+      <em>absolute</em> proceeds even though only 88% of each exit cheque reaches the fund — 31.4 / 87.4
+      = 35.9% of what SB2 receives. <span class="sid">S4</span> <span class="sid">S10</span></p>
+  </section>
+
+  <!-- 6 -->
+  <section class="slide" data-title="Two entities">
+    <p class="kicker">Step 3 · Why there are two cheques</p>
+    <h2>Only a tenth of the money can go offshore-to-offshore</h2>
+    <figure>
+      <div class="frame">
+        <svg viewBox="0 0 880 300" role="img" aria-label="NLP invests through two entities: NLPF in Singapore puts $3.5M of primary capital into SB2 Mauritius for Class B2 with a 9.86x preference, while NLPI in India spends $31.5M buying 12.6% of SB2's stake in each portfolio company directly onshore.">
+          <defs>
+            <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <g fill="none" stroke="currentColor" stroke-width="1.25">
+            <rect x="20" y="118" width="150" height="64" rx="4"></rect>
+            <rect x="300" y="34" width="200" height="64" rx="4"></rect>
+            <rect x="300" y="202" width="200" height="64" rx="4"></rect>
+            <rect x="620" y="34" width="240" height="64" rx="4"></rect>
+            <rect x="620" y="202" width="240" height="64" rx="4"></rect>
+          </g>
+          <g font-family="'IBM Plex Sans', sans-serif" font-size="12.5" fill="currentColor">
+            <text x="36" y="146" font-weight="600">NLP</text>
+            <text x="316" y="62" font-weight="600">NLPF · Singapore feeder</text>
+            <text x="316" y="230" font-weight="600">NLPI · India fund</text>
+            <text x="636" y="62" font-weight="600">SB2 · the fund, in Mauritius</text>
+            <text x="636" y="230" font-weight="600">The portcos, onshore in India</text>
+          </g>
+          <g font-family="'IBM Plex Mono', monospace" font-size="10.5" fill="currentColor" opacity="0.75">
+            <text x="36" y="164">$35M cheque</text>
+            <text x="316" y="81">10% of the cheque</text>
+            <text x="316" y="249">90% of the cheque</text>
+            <text x="636" y="81">new Class B2 + 9.86x pref</text>
+            <text x="636" y="249">direct shareholdings, x2 of each</text>
+          </g>
+          <g fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#a1)">
+            <polyline points="170,136 235,136 235,66 294,66"></polyline>
+            <polyline points="170,164 235,164 235,234 294,234"></polyline>
+            <line x1="500" y1="66" x2="614" y2="66"></line>
+            <line x1="500" y1="234" x2="614" y2="234"></line>
+          </g>
+          <g font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="500" fill="currentColor">
+            <text x="243" y="112">$3.5M</text>
+            <text x="243" y="196">$31.5M</text>
+            <text x="557" y="58" text-anchor="middle">primary</text>
+            <text x="557" y="226" text-anchor="middle">secondary</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption>$3.5M is new money <em>into</em> the fund. $31.5M is a purchase of assets
+        <em>from</em> the fund — so NLPI ends up owning shares in the portcos directly, alongside
+        SB2, and is paid by buyers directly at every exit. <span class="sid">S5</span></figcaption>
+    </figure>
+  </section>
+
+  <!-- 7 -->
+  <section class="slide" data-title="Why 9.86x">
+    <p class="kicker">Step 4 · The pref, and why it is not a round number</p>
+    <h2>You cannot grant a preference over shares you no longer own</h2>
+    <div class="formula" data-step="1">pref = ( 1 − NLPI's onshore share ) × $35M = 0.986 × $35M = <em>$34.51M</em> = 9.86 × $3.5M</div>
+    <p class="body" data-step="2">NLP's 1x back has to come from two places, because its money went to
+      two places. SB2 can only give a preference over the exits it still owns — it has already sold
+      1.4% of each position to NLPI, and that slice is paid to NLPI directly, onshore. So the pref
+      covers $34.51M and the onshore receipts cover the remaining $0.49M.</p>
+    <div class="tiles" data-step="3">
+      <div class="tile"><span class="k">Through the pref</span><span class="v">$34.51M</span><span class="n">SB2 → NLPF, Mauritius</span></div>
+      <div class="tile"><span class="k">Direct, onshore</span><span class="v">$0.49M</span><span class="n">buyers → NLPI, India</span></div>
+      <div class="tile lead"><span class="k">NLP's 1x</span><span class="v">$35.00M</span><span class="n">whole at exactly $35M of exits</span></div>
+    </div>
+    <p class="body" data-step="4">The two conditions coincide by construction: NLP is made whole at the
+      same moment the pref is exhausted. Neither party over- or under-recovers.
+      <span class="sid">S5</span> <span class="sid">S9</span></p>
+  </section>
+
+  <!-- 8 -->
+  <section class="slide" data-title="One exit">
+    <p class="kicker">Step 5 · The flow</p>
+    <h2>One exit, two layers</h2>
+    <figure>
+      <div class="frame">
+        <svg viewBox="0 0 900 400" role="img" aria-label="One exit through both layers: NLPI takes its onshore slice of the buyer's cheque before the fund sees it; SB2's share pays NLPF's preference in full; only after that do Class A, the old LPs and Class B2 share what is left. No route is defined from NLPF back to NLPI.">
+          <defs>
+            <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" fill="currentColor"></path>
+            </marker>
+            <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path class="mark-alert" d="M 0 1 L 9 5 L 0 9 z"></path>
+            </marker>
+          </defs>
+
+          <g data-step="0">
+            <g fill="none" stroke="currentColor" stroke-width="1.25">
+              <rect x="20" y="178" width="150" height="64" rx="4"></rect>
+              <rect x="250" y="60" width="190" height="64" rx="4"></rect>
+              <rect x="250" y="278" width="190" height="64" rx="4"></rect>
+            </g>
+            <g font-family="'IBM Plex Sans', sans-serif" font-size="12.5" fill="currentColor">
+              <text x="36" y="204" font-weight="600">Buyer's cheque</text>
+              <text x="266" y="86" font-weight="600">NLPI · onshore</text>
+              <text x="266" y="304" font-weight="600">SB2 · the fund</text>
+            </g>
+            <g font-family="'IBM Plex Mono', monospace" font-size="10.5" fill="currentColor" opacity="0.72">
+              <text x="36" y="223">one portco position</text>
+              <text x="266" y="105">paid directly, in India</text>
+              <text x="266" y="323">paid in Mauritius</text>
+            </g>
+            <g fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#a2)">
+              <polyline points="170,196 210,196 210,92 244,92"></polyline>
+              <polyline points="170,224 210,224 210,310 244,310"></polyline>
+            </g>
+            <g font-family="'IBM Plex Mono', monospace" font-size="10.5" fill="currentColor" font-weight="500">
+              <text x="218" y="146">12.6%</text>
+              <text x="218" y="160" opacity="0.7">x2</text>
+              <text x="218" y="258">87.4%</text>
+            </g>
+          </g>
+
+          <g data-step="1">
+            <rect x="500" y="278" width="190" height="64" rx="4" fill="none" stroke="currentColor" stroke-width="1.25"></rect>
+            <text x="516" y="304" font-family="'IBM Plex Sans', sans-serif" font-size="12.5" fill="currentColor" font-weight="600">NLPF liqpref</text>
+            <text x="516" y="323" font-family="'IBM Plex Mono', monospace" font-size="10.5" fill="currentColor" opacity="0.72">$34.51M, then done</text>
+            <line x1="440" y1="310" x2="494" y2="310" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#a2)"></line>
+            <text x="467" y="266" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="10.5" fill="currentColor">100% until repaid</text>
+          </g>
+
+          <g data-step="2">
+            <g fill="none" stroke="currentColor" stroke-width="1.25">
+              <rect x="740" y="216" width="150" height="44" rx="4"></rect>
+              <rect x="740" y="272" width="150" height="44" rx="4"></rect>
+              <rect x="740" y="328" width="150" height="44" rx="4"></rect>
+            </g>
+            <g font-family="'IBM Plex Sans', sans-serif" font-size="12.5" fill="currentColor">
+              <text x="756" y="243">Class A · GP</text>
+              <text x="756" y="299">Class B1 · old LPs</text>
+              <text x="756" y="355">Class B2 · NLPF</text>
+            </g>
+            <g font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="500" fill="currentColor">
+              <text x="874" y="243" text-anchor="end">31.4%</text>
+              <text x="874" y="299" text-anchor="end">54.5%</text>
+              <text x="874" y="355" text-anchor="end">1.5%</text>
+            </g>
+            <g fill="none" stroke="currentColor" stroke-width="1.4">
+              <polyline points="690,310 712,310"></polyline>
+              <line x1="712" y1="238" x2="712" y2="350"></line>
+            </g>
+            <g fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#a2)">
+              <line x1="712" y1="238" x2="734" y2="238"></line>
+              <line x1="712" y1="294" x2="734" y2="294"></line>
+              <line x1="712" y1="350" x2="734" y2="350"></line>
+            </g>
+            <text x="815" y="204" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="10.5" fill="currentColor" opacity="0.8">once the $35M is repaid</text>
+          </g>
+
+          <g data-step="3">
+            <polyline points="595,274 595,164 345,164 345,130" class="edge-alert" fill="none" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#a3)"></polyline>
+            <text x="470" y="152" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="10.5" font-weight="500" class="text-alert">no route defined</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption data-step="3">The dashed edge is the gap. NLPF collects the preference in
+        Singapore; NLPI, which funded 90% of the cheque, has no defined way to receive it. The
+        document raises this itself, twice, and leaves it open. <span class="sid">S8</span>
+        <span class="sid">S9</span></figcaption>
+    </figure>
+  </section>
+
+  <!-- 9 -->
+  <section class="slide" data-title="Worked exits">
+    <p class="kicker">Step 6 · The document's own example</p>
+    <h2>$35M of exits repays NLP exactly, to the cent</h2>
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr><th>Exit</th><th class="f">Cheque</th><th class="f">NLPI onshore</th><th class="f">SB2</th><th class="f">Pref left</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="lead">WheelsEye · 2.5% at $800M</td><td class="f">$20.00M</td><td class="f">$0.28M</td><td class="f">$19.72M</td><td class="f">$14.79M</td></tr>
+          <tr><td class="lead">Niyo · first tranche of a $25M secondary</td><td class="f">$15.00M</td><td class="f">$0.21M</td><td class="f">$14.79M</td><td class="f good">$0.00M</td></tr>
+          <tr class="total"><td>NLP repaid</td><td class="f">$35.00M</td><td class="f">$0.49M</td><td class="f">$34.51M</td><td class="f good">satisfied</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="body" data-step="1">Every dollar of these two exits goes to NLP, and the last dollar of
+      the pref is the last dollar of the $35M. Nothing reaches the GP or the old LPs yet.
+      <span class="sid">S8</span> <span class="sid">S9</span></p>
+  </section>
+
+  <!-- 10 -->
+  <section class="slide" data-title="The tail">
+    <p class="kicker">Step 7 · And from then on</p>
+    <h2>Every exit after that splits four ways</h2>
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr><th>On the next $10M of Niyo</th><th class="f">Share of the cheque</th><th class="f">Amount</th><th>Paid by</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="lead">NLPI · direct</td><td class="f">12.6%</td><td class="f">$1.26M</td><td>the buyer, onshore</td></tr>
+          <tr><td class="lead">Class A · GP</td><td class="f">31.4%</td><td class="f">$3.14M</td><td>the fund</td></tr>
+          <tr><td class="lead">Class B1 · old LPs</td><td class="f">54.5%</td><td class="f">$5.45M</td><td>the fund</td></tr>
+          <tr><td class="lead">Class B2 · NLPF</td><td class="f">1.5%</td><td class="f">$0.15M</td><td>the fund</td></tr>
+          <tr class="total"><td>NLP, all in</td><td class="f">14.1%</td><td class="f">$1.41M</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="body" data-step="1">The preference is spent, so NLPF drops back to being an ordinary
+      Class B holder — a participating pref, in other words. The buyer still writes two cheques at
+      every exit, because NLPI's shares are its own. <span class="sid">S10</span></p>
+  </section>
+
+  <!-- 11 -->
+  <section class="slide" data-title="The open number">
+    <p class="kicker">Where it does not close</p>
+    <h2>One percentage sets both the exit split and the pref multiple</h2>
+    <p class="body">The structure sells NLPI <strong>12.6%</strong> of each portco position
+      <span class="sid">S5</span>, and the tail duly splits each cheque 88 / 12 <span class="sid">S10</span>.
+      But the worked exits split it 98.6 / <strong>1.4</strong> — and 1.4% is x1, a percentage of Class B
+      <em>inside the fund</em>, not of a portco position. The 9.86x pref is netted against that same 1.4%.</p>
+    <div class="scroller" data-step="1">
+      <table>
+        <thead>
+          <tr><th>If NLPI's onshore slice is…</th><th class="f">Consistent pref</th><th>Holding 9.86x anyway</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="lead">1.4% — the worked exits</td><td class="f good">9.86x · $34.51M</td><td>correct: NLP whole at exactly $35M</td></tr>
+          <tr><td class="lead">12.6% — the structure</td><td class="f warn">8.74x · $30.59M</td><td class="warn">pref clears only after $39.49M of exits — NLP takes $4.49M more than its 1x, out of Class A and the old LPs</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note" data-step="2"><b>consequence</b>9.86x is not an independently negotiated term —
+      it is a function of the split. Since the exact x1 and x2 are still to be settled, the pref
+      belongs in the documents as a formula or as a cap on aggregate priority receipts, not as a
+      hard multiple on the feeder's $3.5M.</div>
+  </section>
+
+  <!-- 12 -->
+  <section class="slide" data-title="The open question">
+    <p class="kicker">Where it does not close</p>
+    <h2>The preference repays the entity that funded a tenth of it</h2>
+    <blockquote class="quote">“Open Question: NLP_F then distributes pro-rata to NLP in India — how
+      does the NLP India fund receive its returns?”
+      <cite>Source document, sections S8 and S9 — asked twice</cite></blockquote>
+    <p class="body" data-step="1">NLPI put in $31.5M. NLPF holds the $34.51M preference that repays
+      it. Nothing in the document connects them — and this is not a detail to paper later: the
+      alternative, repaying NLPI at the portco level through an enlarged onshore slice until it is
+      whole, changes every number in the worked exits, including the pref multiple.</p>
+    <p class="body" data-step="2"><strong>This is the first thing to settle.</strong> Everything
+      downstream is conditional on the answer.</p>
+  </section>
+
+  <!-- 13 -->
+  <section class="slide" data-title="What each side makes">
+    <p class="kicker">The trade</p>
+    <h2>NLP is buying protection. The LPs are buying certainty.</h2>
+    <div class="two-col">
+      <div class="tiles" style="grid-template-columns:1fr">
+        <div class="tile lead"><span class="k">NLP · at carrying value</span><span class="v">2.31x</span><span class="n">$80.8M on a $35M cheque, if the portfolio realises $360M</span></div>
+        <div class="tile"><span class="k">NLP · whole at</span><span class="v">$35M</span><span class="n">of total exits, against a $360M carrying value — that is what the discount buys</span></div>
+      </div>
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Old LPs realise…</th><th class="f">With</th><th class="f">Without</th><th class="f">Give-up</th></tr></thead>
+          <tbody>
+            <tr><td class="lead">0.25× NAV</td><td class="f">$65.0M</td><td class="f">$72.0M</td><td class="f warn">−$7.1M</td></tr>
+            <tr><td class="lead">0.50× NAV</td><td class="f">$114.0M</td><td class="f">$133.8M</td><td class="f warn">−$19.7M</td></tr>
+            <tr><td class="lead">1.00× NAV</td><td class="f">$212.1M</td><td class="f">$257.3M</td><td class="f warn">−$45.1M</td></tr>
+            <tr><td class="lead">1.50× NAV</td><td class="f">$310.2M</td><td class="f">$380.7M</td><td class="f warn">−$70.5M</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="body" data-step="1">The old LPs swap 14.1% of all future profit for $35M today — and
+      because $35M is close to the $34.30M of capital they were owed anyway, they are indifferent at
+      about $40M of total future proceeds. Above that they are paying with upside. That is the 35%
+      discount working as intended; it should reach them framed that way, with this table attached.</p>
+  </section>
+
+  <!-- 14 -->
+  <section class="slide" data-title="Where it stands">
+    <p class="kicker">Where it stands</p>
+    <h2>The arithmetic is sound. The plumbing is not finished.</h2>
+    <div class="tiles">
+      <div class="tile"><span class="k">Findings open</span><span class="v">12</span><span class="n">6 high · 3 medium · 3 low</span></div>
+      <div class="tile lead"><span class="k">Closed 27 Aug</span><span class="v">2</span><span class="n">by restating the pref at 9.86x</span></div>
+      <div class="tile"><span class="k">Blocking</span><span class="v">4</span><span class="n">before this can be papered</span></div>
+    </div>
+    <ol class="fixes" data-step="1">
+      <li><span>Resolve the NLPF → NLPI return path. <span class="ref">F8</span></span></li>
+      <li><span>Pick one basis per percentage, restate the worked exits at 87.4 / 12.6, and re-derive the pref multiple with them. <span class="ref">F2 · F4 · F14</span></span></li>
+      <li><span>State the priority return as an aggregate $35M across both NLP entities, with the pref drafted net of NLPI's onshore receipts. <span class="ref">F5 · F14</span></span></li>
+      <li><span>Price the onshore transfer taxes, then re-derive x1 and x2 from the grossed-up cheque. <span class="ref">F10</span></span></li>
+    </ol>
+    <p class="body mono" data-step="2" style="font-size:0.8rem">Every figure in this deck is computed from
+      the document's own primitives, not quoted — the waterfall is reimplemented in deal_agent/ and
+      reproduces the worked exits to the cent.</p>
+  </section>
+
+</main>
+
+<footer class="rail rail-bottom">
+  <span class="counter" id="counter">01 / 14</span>
+  <span class="spacer"></span>
+  <div class="dots" id="dots" role="tablist" aria-label="Slides"></div>
+  <span class="spacer"></span>
+  <div class="nav">
+    <button id="prev" type="button" aria-label="Previous slide">Prev</button>
+    <button id="next" type="button" aria-label="Next slide">Next</button>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    document.body.classList.add("deck-ready");
+    var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+    var counter = document.getElementById("counter");
+    var dotRail = document.getElementById("dots");
+    var prevBtn = document.getElementById("prev");
+    var nextBtn = document.getElementById("next");
+
+    // Steps within a slide: elements tagged data-step are revealed in order.
+    var steps = slides.map(function (slide) {
+      var tagged = Array.prototype.slice.call(slide.querySelectorAll("[data-step]"));
+      var levels = tagged.map(function (el) { return parseInt(el.getAttribute("data-step"), 10) || 0; });
+      return { els: tagged, max: levels.length ? Math.max.apply(null, levels) : 0 };
+    });
+
+    var index = 0;
+    var step = 0;
+
+    var dots = slides.map(function (slide, i) {
+      var dot = document.createElement("button");
+      dot.className = "dot";
+      dot.type = "button";
+      dot.setAttribute("role", "tab");
+      dot.setAttribute("aria-label", (i + 1) + ". " + (slide.getAttribute("data-title") || ""));
+      dot.addEventListener("click", function () { go(i, 0); });
+      dotRail.appendChild(dot);
+      return dot;
+    });
+
+    function pad(n) { return (n < 10 ? "0" : "") + n; }
+
+    function render() {
+      slides.forEach(function (slide, i) {
+        slide.setAttribute("data-active", i === index ? "true" : "false");
+      });
+      steps[index].els.forEach(function (el) {
+        var level = parseInt(el.getAttribute("data-step"), 10) || 0;
+        el.classList.toggle("shown", level <= step);
+      });
+      dots.forEach(function (dot, i) { dot.setAttribute("aria-current", i === index ? "true" : "false"); });
+      counter.textContent = pad(index + 1) + " / " + pad(slides.length);
+      prevBtn.disabled = index === 0 && step === 0;
+      nextBtn.disabled = index === slides.length - 1 && step >= steps[index].max;
+      try { history.replaceState(null, "", "#" + (index + 1)); } catch (e) { /* ignore */ }
+    }
+
+    function go(i, s) {
+      index = Math.max(0, Math.min(slides.length - 1, i));
+      var max = steps[index].max;
+      step = s === "last" ? max : Math.max(0, Math.min(max, s));
+      window.scrollTo(0, 0);
+      render();
+    }
+
+    function advance() {
+      if (step < steps[index].max) { step += 1; render(); return; }
+      if (index < slides.length - 1) { go(index + 1, 0); }
+    }
+
+    function retreat() {
+      if (step > 0) { step -= 1; render(); return; }
+      if (index > 0) { go(index - 1, "last"); }
+    }
+
+    nextBtn.addEventListener("click", advance);
+    prevBtn.addEventListener("click", retreat);
+
+    document.addEventListener("keydown", function (event) {
+      if (event.metaKey || event.ctrlKey || event.altKey) { return; }
+      switch (event.key) {
+        case "ArrowRight": case "ArrowDown": case "PageDown": case " ": case "Enter":
+          event.preventDefault(); advance(); break;
+        case "ArrowLeft": case "ArrowUp": case "PageUp":
+          event.preventDefault(); retreat(); break;
+        case "Home": event.preventDefault(); go(0, 0); break;
+        case "End": event.preventDefault(); go(slides.length - 1, "last"); break;
+      }
+    });
+
+    var touchX = null;
+    document.addEventListener("touchstart", function (e) { touchX = e.changedTouches[0].clientX; }, { passive: true });
+    document.addEventListener("touchend", function (e) {
+      if (touchX === null) { return; }
+      var dx = e.changedTouches[0].clientX - touchX;
+      touchX = null;
+      if (Math.abs(dx) < 60) { return; }
+      if (dx < 0) { advance(); } else { retreat(); }
+    }, { passive: true });
+
+    var fromHash = parseInt((location.hash || "").replace("#", ""), 10);
+    go(isNaN(fromHash) ? 0 : fromHash - 1, 0);
+  })();
+</script>

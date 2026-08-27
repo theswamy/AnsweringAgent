@@ -4,8 +4,8 @@ The agent is only allowed to speak about this transaction on the basis of this
 text (plus the arithmetic in `terms.py` / `waterfall.py`, which is derived from
 it). Sections carry stable ids so every answer can point at where it came from.
 
-Source: Google Doc 1vepHdrEY2IuuM9TjwH0ced5FOrRerA0ugtr0gxD8tFU, read
-2026-08-27. The wording below is the document's; only the Markdown escaping
+Source: Google Doc 1vepHdrEY2IuuM9TjwH0ced5FOrRerA0ugtr0gxD8tFU, as revised
+2026-08-27 (the liqpref restated from 10x to 9.86x). The wording below is the document's; only the Markdown escaping
 that the export added has been removed.
 """
 from __future__ import annotations
@@ -80,7 +80,7 @@ the fund in Mauritius and the rest can only be done onshore in India.
 NLP writes a check of $35M as follows:
 
 - NLPF (Feeder in Singapore) puts in $3.5M (10%) to SB2 Mauritius - this comes with a
-  10x liqpref and they buy (x1=1.4%) of the Class B
+  ~10x (9.86 to be precise) liqpref and they buy (x1=1.4%) of the Class B
 - NLPI (India Fund) $31.5M is used to acquire (x2=12.6%) % of SB2's stakes in each of
   the portcos from SB2 in India
   - These will be direct shareholdings in the target companies, i.e. x2_we, x2_mg,
@@ -136,7 +136,7 @@ a) First $15 M
 - Buyer pays $0.21M to NLPI for sale of 0.042% of Niyo
 - SB2 distributes entire proceeds of $14.79M to NLPF under the Liqpref
 
-*LIQPREF SATISFIED*
+(19.72+14.79)/3.5 = 9.86 - LIQPREF SATISFIED!
 
 - Open Question: NLP_F then distributes pro-rata to NLP in India - how does the NLPI
   fund receive its returns?""",

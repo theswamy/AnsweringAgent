@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable
 
-from .terms import DealTerms, derive, old_lp_tradeoff
+from .terms import DealTerms, derive, old_lp_tradeoff, pref_consistency
 from .waterfall import DOCUMENT_EXITS, SplitConvention, run_waterfall
 
 
@@ -23,6 +23,10 @@ class Finding:
     sections: tuple[str, ...]
     resolution: str
     check: Callable[[], str] | None = None
+    #: open | closed. Closed findings are kept, with what closed them, so the
+    #: register stays a record of the negotiation rather than only its present state.
+    status: str = "open"
+
 
     def evidence(self) -> str:
         return self.check() if self.check else ""
@@ -40,11 +44,14 @@ def _f1() -> str:
 def _f2() -> str:
     struct = run_waterfall(DOCUMENT_EXITS[:1], convention=SplitConvention.STRUCTURE).events[0]
     doc = run_waterfall(DOCUMENT_EXITS[:1], convention=SplitConvention.DOC_EXAMPLES).events[0]
+    at_x2 = pref_consistency(DealTerms().x2_portco)
     return (
         f"$20M WheelsEye exit: x2=12.6% gives NLPI ${struct.nlpi_direct:,.2f}M and SB2 "
         f"${struct.sb2_receipts:,.2f}M; the document's 1.4% gives NLPI "
         f"${doc.nlpi_direct:,.2f}M and SB2 ${doc.sb2_receipts:,.2f}M - a "
-        f"${struct.nlpi_direct - doc.nlpi_direct:,.2f}M difference on one exit"
+        f"${struct.nlpi_direct - doc.nlpi_direct:,.2f}M difference on one exit. It also sets "
+        f"the pref multiple: at x2 the consistent pref is "
+        f"{at_x2['consistent_multiple']:.2f}x (${at_x2['consistent_pref']:,.2f}M), not 9.86x"
     )
 
 
@@ -52,9 +59,10 @@ def _f3() -> str:
     doc = run_waterfall(DOCUMENT_EXITS[:2], convention=SplitConvention.DOC_EXAMPLES)
     struct = run_waterfall(DOCUMENT_EXITS[:2], convention=SplitConvention.STRUCTURE)
     return (
-        f"after the two exits the document marks satisfied, the pref still has "
-        f"${doc.pref_outstanding:,.2f}M outstanding on the document's own split, and "
-        f"${struct.pref_outstanding:,.2f}M outstanding at x2=12.6%"
+        f"at the marker the pref is exhausted to the cent on the document's own split "
+        f"(${doc.pref_outstanding:,.2f}M outstanding, NLP repaid "
+        f"${doc.totals['nlp_total']:,.2f}M); at x2=12.6% the same $35M of exits leaves "
+        f"${struct.pref_outstanding:,.2f}M outstanding"
     )
 
 
@@ -70,13 +78,26 @@ def _f4() -> str:
 
 
 def _f5() -> str:
-    loose = run_waterfall(DOCUMENT_EXITS, count_direct_against_pref=False)
-    strict = run_waterfall(DOCUMENT_EXITS, count_direct_against_pref=True)
+    as_sized = run_waterfall(DOCUMENT_EXITS[:2], convention=SplitConvention.DOC_EXAMPLES)
+    netted_twice = run_waterfall(
+        DOCUMENT_EXITS[:2], convention=SplitConvention.DOC_EXAMPLES,
+        count_direct_against_pref=True,
+    )
     return (
-        f"over the document's $45M of exits NLP receives ${loose.totals['nlp_total']:,.2f}M if "
-        f"onshore proceeds do not count against the pref, and "
-        f"${strict.totals['nlp_total']:,.2f}M if they do - the difference comes straight out of "
-        f"Class A and Class B1"
+        f"the 9.86x sizing nets the onshore slice off once: NLP is repaid exactly "
+        f"${as_sized.totals['nlp_total']:,.2f}M at the marker. Netting it off twice in the "
+        f"drafting would repay ${netted_twice.totals['nlp_total']:,.2f}M and start the tail early"
+    )
+
+
+def _f14() -> str:
+    at_x1 = pref_consistency(DealTerms().x1_class_b)
+    at_x2 = pref_consistency(DealTerms().x2_portco)
+    return (
+        f"pref = (1 - onshore%) x $35M: {at_x1['consistent_multiple']:.2f}x at 1.4%, "
+        f"{at_x2['consistent_multiple']:.2f}x at 12.6%. Holding 9.86x while NLPI takes 12.6% "
+        f"means the pref only clears after ${at_x2['exits_until_pref_exhausted']:,.2f}M of "
+        f"exits, by which point NLP has taken ${at_x2['over_recovery']:,.2f}M more than its 1x"
     )
 
 
@@ -93,9 +114,10 @@ def _f7() -> str:
     t = DealTerms()
     return (
         f"${t.feeder_contribution:,.2f}M of new money carries a "
-        f"{t.feeder_liqpref_multiple:.0f}x pref = ${t.feeder_liqpref:,.2f}M of priority claim, "
-        f"{t.feeder_liqpref / t.feeder_contribution:.0f}x the feeder's contribution and "
-        f"{t.feeder_liqpref / t.check:.0%} of the whole NLP cheque"
+        f"{t.feeder_liqpref_multiple:.2f}x pref = ${t.feeder_liqpref:,.2f}M of priority claim "
+        f"ranking ahead of both existing classes - "
+        f"{t.feeder_liqpref / t.check:.1%} of the whole NLP cheque, against "
+        f"{t.feeder_contribution / t.check:.0%} of the money"
     )
 
 
@@ -145,23 +167,27 @@ FINDINGS: tuple[Finding, ...] = (
         "substitution visible: it computes NLP's slice as '2.5% * x2_WE' but then prints "
         "0.035% of WheelsEye, which is 2.5% x 1.4%. At x2 it would be 0.315%.",
         ("S5", "S8", "S9", "S10"),
-        "Restate [S8] and [S9] at 87.4/12.6, or say explicitly why NLPI's onshore slice "
-        "differs before and after the pref is repaid.",
+        "Restate [S8] and [S9] at 87.4/12.6 and re-derive the pref multiple with them, or "
+        "say explicitly why NLPI's onshore slice differs before and after the pref is repaid.",
         _f2,
     ),
     Finding(
         "F3",
         "high",
         "arithmetic",
-        "'LIQPREF SATISFIED' is marked before the pref is actually repaid",
-        "[S9] declares the pref satisfied after SB2 has received $19.72M + $14.79M = "
-        "$34.51M against a $35M pref - $0.49M short. On the x2-consistent split of F2, SB2 "
-        "receives only $30.59M of the same $35M of exits, leaving $4.41M outstanding, so "
-        "the tail in [S10] would not begin until part-way through the next $10M tranche.",
-        ("S8", "S9", "S10"),
-        "Either size the two illustrative exits so the pref really is repaid, or move the "
-        "marker into the [S10] tranche and show the split tranche.",
+        "The pref now clears exactly at the marker - CLOSED by the 9.86x restatement",
+        "Previously [S9] declared the pref satisfied after SB2 had received $19.72M + $14.79M "
+        "= $34.51M against a $35M pref, $0.49M short. The 27 Aug revision resizes the pref to "
+        "9.86x = $34.51M and shows the derivation, so on the document's own split the pref is "
+        "exhausted to the cent at the marker and NLP has been repaid exactly $35.00M across "
+        "both entities. The reason is sound: SB2 cannot grant a pref over the shares it has "
+        "already sold to NLPI, so the pref covers only the part of each exit SB2 still owns. "
+        "What survives is conditional, not arithmetic: the sizing assumes the onshore slice is "
+        "1.4% (see F2 and F14).",
+        ("S5", "S8", "S9", "S10"),
+        "Nothing to fix as drafted. Re-derive the multiple if x1 or x2 move at signing.",
         _f3,
+        "closed",
     ),
     Finding(
         "F4",
@@ -180,17 +206,21 @@ FINDINGS: tuple[Finding, ...] = (
     ),
     Finding(
         "F5",
-        "high",
+        "medium",
         "economics",
-        "Whether NLPI's onshore proceeds count towards NLP's 'first 35M' is unstated",
-        "[S4] says the first $35M goes to NLP. The worked exits instead run the $35M pref "
-        "purely through SB2's receipts while NLPI separately banks its onshore slice of "
-        "every cheque, so NLP is repaid more than $35M before the tail starts. On the two "
-        "illustrative exits that is a small number; on a larger first exit it is not.",
-        ("S4", "S8", "S9", "S10"),
-        "State whether the $35M priority return is measured on all NLP receipts (both "
-        "entities) or only on distributions from SB2, and cap the pref accordingly.",
+        "NLP's 'first 35M' is now measured across both entities - CLOSED, but say so in terms",
+        "The question was whether NLPI's onshore receipts counted towards the first $35M. The "
+        "9.86x sizing answers it: the pref is $35M less the 1.4% NLPI takes onshore, so the two "
+        "entities are made whole together at exactly $35M of exits and the pref is exhausted at "
+        "the same moment. That is the right answer, but it is currently implicit in a multiple. "
+        "Drafting that nets NLPI's receipts off the pref again - reading '$35M to NLP' literally "
+        "on top of a pref already net of it - would under-repay NLP and start the tail early.",
+        ("S4", "S5", "S8", "S9"),
+        "State the priority return as an aggregate $35M across NLPF and NLPI, with the pref "
+        "expressed as the balance after NLPI's onshore receipts, so the netting is explicit "
+        "and cannot be applied twice.",
         _f5,
+        "closed",
     ),
     Finding(
         "F6",
@@ -210,10 +240,10 @@ FINDINGS: tuple[Finding, ...] = (
         "F7",
         "high",
         "structure",
-        "The 10x liqpref is a $35M priority claim funded with $3.5M",
-        "NLPF contributes $3.5M for a 10x pref [S5]. That is deliberate - it sizes the pref "
-        "to the whole NLP cheque so that NLPI's onshore purchase price can be repaid "
-        "through the Mauritius entity - but the economic effect is a $35M senior claim on "
+        "The pref is a $34.51M priority claim funded with $3.5M",
+        "NLPF contributes $3.5M for a 9.86x pref [S5]. That is deliberate - it sizes the pref "
+        "to the NLP cheque so that NLPI's onshore purchase price can be repaid "
+        "through the Mauritius entity - but the economic effect is a $34.51M senior claim on "
         "the fund's future distributions against $3.5M of new money, and it ranks ahead of "
         "both existing classes. It is also participating: [S10] leaves Class B2 sharing in "
         "the tail after the pref is repaid.",
@@ -298,6 +328,23 @@ FINDINGS: tuple[Finding, ...] = (
         None,
     ),
     Finding(
+        "F14",
+        "high",
+        "drafting",
+        "The pref multiple is a derived number and should be drafted as one",
+        "9.86x is not an independently negotiated term - it is (1 - NLPI's onshore share) x "
+        "$35M / $3.5M. [S9] derives it as (19.72 + 14.79) / 3.5, which reads as though it came "
+        "out of the two illustrative exits; it did not, and the rule holds for any exit "
+        "sequence. That matters because [S6] says the exact x1 and x2 will differ, and every "
+        "change to them moves the multiple. Fixing 9.86x in the documents while x2 settles at "
+        "12.6% leaves NLP taking 100% of SB2's receipts past its 1x.",
+        ("S5", "S6", "S9"),
+        "Draft the pref as an amount with a formula - '$34.51M, being $35M less NLPI's onshore "
+        "percentage of it' - or as a cap on aggregate priority receipts across both entities, "
+        "rather than as a hard multiple on the feeder's $3.5M.",
+        _f14,
+    ),
+    Finding(
         "F13",
         "medium",
         "economics",
@@ -321,9 +368,13 @@ BY_ID = {f.id: f for f in FINDINGS}
 def format_findings(findings: tuple[Finding, ...] = FINDINGS, verbose: bool = True) -> str:
     order = {"high": 0, "medium": 1, "low": 2}
     lines: list[str] = []
-    for finding in sorted(findings, key=lambda f: (order.get(f.severity, 9), int(f.id[1:]))):
+    for finding in sorted(
+        findings,
+        key=lambda f: (f.status == "closed", order.get(f.severity, 9), int(f.id[1:])),
+    ):
+        status = "" if finding.status == "open" else f"/{finding.status.upper()}"
         lines.append(
-            f"{finding.id}  [{finding.severity.upper()}/{finding.kind}]  {finding.title}"
+            f"{finding.id}  [{finding.severity.upper()}/{finding.kind}{status}]  {finding.title}"
         )
         if verbose:
             lines.append(f"    sections: {', '.join(finding.sections)}")
