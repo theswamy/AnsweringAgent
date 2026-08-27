@@ -89,8 +89,8 @@ class TestCapTable(unittest.TestCase):
 
 
 class TestLiqPref(unittest.TestCase):
-    def test_pref_is_the_cheque_net_of_the_onshore_slice(self):
-        """[S5] - 9.86x on $3.5M, i.e. $35M less the 1.4% NLPI takes onshore."""
+    def test_pref_is_the_cheque_net_of_a_1_4_pct_slice_as_stated(self):
+        """[S5] - 9.86x on $3.5M, i.e. 98.6% of the $35M cheque."""
         self.assertAlmostEqual(TERMS.feeder_contribution, 3.5)
         self.assertAlmostEqual(TERMS.onshore_contribution, 31.5)
         self.assertAlmostEqual(TERMS.feeder_liqpref, 34.51, places=6)
@@ -135,14 +135,28 @@ class TestLiqPref(unittest.TestCase):
         self.assertAlmostEqual(result.totals["nlp_total"], TERMS.check, places=6)
 
     def test_pref_multiple_is_a_function_of_the_onshore_slice(self):
+        """The stated 9.86x is what nets off x1; 8.74x is what nets off x2.
+
+        Only a portco-level slice reaches NLP without passing through SB2, so
+        x2 is the basis the principle requires - x1 is a fund-level interest and
+        the pref already takes 100% of SB2's receipts while it runs.
+        """
         at_x1 = pref_consistency(TERMS.x1_class_b)
         self.assertAlmostEqual(at_x1["consistent_multiple"], 9.86, places=6)
-        self.assertAlmostEqual(at_x1["over_recovery"], 0.0, places=6)
+        self.assertAlmostEqual(at_x1["consistent_pref"], TERMS.feeder_liqpref, places=6)
 
         at_x2 = pref_consistency(TERMS.x2_portco)
         self.assertAlmostEqual(at_x2["consistent_multiple"], 8.74, places=6)
         self.assertAlmostEqual(at_x2["consistent_pref"], 30.59, places=6)
         self.assertAlmostEqual(at_x2["over_recovery"], 4.49, places=2)
+
+    def test_nothing_reaches_nlp_outside_the_pref_on_account_of_x1(self):
+        """Why 9.86x's $0.49M is phantom: while the pref runs, SB2 distributes
+        100% to NLPF, so the feeder's Class B2 share is zero until it clears."""
+        during = run_waterfall(DOCUMENT_EXITS[:1]).events[0]
+        self.assertGreater(during.to_nlpf_pref, 0.0)
+        self.assertEqual(during.class_b2_nlpf, 0.0)
+        self.assertEqual(during.class_a, 0.0)
 
     def test_an_8_74x_pref_clears_exactly_at_x2(self):
         result = run_waterfall(DOCUMENT_EXITS[:2], liqpref=30.59)

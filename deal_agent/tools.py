@@ -86,7 +86,8 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
                 "liqpref": {
                     "type": "number",
                     "description": "Override the pref amount in $M. Defaults to the stated "
-                    "9.86x on $3.5M = $34.51M; 30.59 is the figure consistent with x2 = 12.6%.",
+                    "9.86x on $3.5M = $34.51M; 30.59 (8.74x) is the figure consistent with the "
+                    "12.6% SB2 actually sold at the portco level.",
                 },
                 "count_direct_against_pref": {
                     "type": "boolean",
@@ -164,8 +165,10 @@ def deal_terms() -> str:
             "nlpf_contribution_musd": terms.feeder_contribution,
             "nlpf_liqpref_multiple": terms.feeder_liqpref_multiple,
             "nlpf_liqpref_musd": terms.feeder_liqpref,
-            "nlpf_liqpref_note": "9.86x, i.e. $35M less the 1.4% NLPI takes onshore - SB2 "
-            "cannot grant a pref over shares it has already sold",
+            "nlpf_liqpref_note": "9.86x = 98.6% of $35M, as stated. SB2 cannot grant a pref "
+            "over shares it has already sold, but what it sold at the portco level is x2 = "
+            "12.6% to NLPI, not x1 = 1.4% (NLPF's interest inside the fund) - so the "
+            "consistent figure is 8.74x = $30.59M. See pref_consistency and finding F2.",
             "nlpi_onshore_musd": terms.onshore_contribution,
             "x1_pct_of_class_b": terms.x1_class_b,
             "x2_pct_of_portco_stakes": terms.x2_portco,

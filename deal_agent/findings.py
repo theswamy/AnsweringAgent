@@ -182,8 +182,9 @@ FINDINGS: tuple[Finding, ...] = (
         "exhausted to the cent at the marker and NLP has been repaid exactly $35.00M across "
         "both entities. The reason is sound: SB2 cannot grant a pref over the shares it has "
         "already sold to NLPI, so the pref covers only the part of each exit SB2 still owns. "
-        "What survives is conditional, not arithmetic: the sizing assumes the onshore slice is "
-        "1.4% (see F2 and F14).",
+        "What survives is that the principle is applied to the wrong percentage: the sizing nets "
+        "off 1.4%, which is NLPF's interest inside the fund and never arrives outside the pref, "
+        "rather than the 12.6% SB2 actually sold at the portco level (see F2 and F14).",
         ("S5", "S8", "S9", "S10"),
         "Nothing to fix as drafted. Re-derive the multiple if x1 or x2 move at signing.",
         _f3,
@@ -210,9 +211,10 @@ FINDINGS: tuple[Finding, ...] = (
         "economics",
         "NLP's 'first 35M' is now measured across both entities - CLOSED, but say so in terms",
         "The question was whether NLPI's onshore receipts counted towards the first $35M. The "
-        "9.86x sizing answers it: the pref is $35M less the 1.4% NLPI takes onshore, so the two "
-        "entities are made whole together at exactly $35M of exits and the pref is exhausted at "
-        "the same moment. That is the right answer, but it is currently implicit in a multiple. "
+        "sizing answers it in principle: the pref is $35M less what NLP receives outside it, so "
+        "the two entities are made whole together and the pref is exhausted at the same moment. "
+        "That is the right answer, but it is implicit in a multiple - and the multiple nets off "
+        "the wrong percentage (F2). "
         "Drafting that nets NLPI's receipts off the pref again - reading '$35M to NLP' literally "
         "on top of a pref already net of it - would under-repay NLP and start the tail early.",
         ("S4", "S5", "S8", "S9"),
@@ -332,12 +334,13 @@ FINDINGS: tuple[Finding, ...] = (
         "high",
         "drafting",
         "The pref multiple is a derived number and should be drafted as one",
-        "9.86x is not an independently negotiated term - it is (1 - NLPI's onshore share) x "
-        "$35M / $3.5M. [S9] derives it as (19.72 + 14.79) / 3.5, which reads as though it came "
-        "out of the two illustrative exits; it did not, and the rule holds for any exit "
-        "sequence. That matters because [S6] says the exact x1 and x2 will differ, and every "
-        "change to them moves the multiple. Fixing 9.86x in the documents while x2 settles at "
-        "12.6% leaves NLP taking 100% of SB2's receipts past its 1x.",
+        "9.86x is not an independently negotiated term - it is (1 - the share paid to NLP "
+        "outside the pref) x $35M / $3.5M. Two things follow. First, the share in that formula "
+        "has to be a portco-level one: only x2 = 12.6% reaches NLP without passing through SB2, "
+        "so the multiple is 8.74x, not 9.86x. Second, [S9] derives 9.86 as (19.72 + 14.79) / "
+        "3.5, which reads as though it came out of the two illustrative exits; it did not, and "
+        "the rule holds for any exit sequence. Since [S6] says the exact x1 and x2 will differ, "
+        "every change to them moves the multiple.",
         ("S5", "S6", "S9"),
         "Draft the pref as an amount with a formula - '$34.51M, being $35M less NLPI's onshore "
         "percentage of it' - or as a cap on aggregate priority receipts across both entities, "

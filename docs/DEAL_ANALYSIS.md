@@ -26,20 +26,27 @@ So $3.5M is primary money into the fund and $31.5M is a secondary purchase of as
 whole NLP cheque and exists to route NLPI's onshore purchase price back through
 Mauritius.
 
-**The 9.86x is a derived number.** 9.86 × $3.5M = $34.51M, which is $35M less the 1.4%
-NLPI takes onshore — SB2 cannot grant a preference over shares it has already sold, so
-the pref covers only the part of each exit SB2 still owns, and the remainder reaches NLP
-directly in India. The general rule is
+**The pref multiple is a derived number, and 9.86x derives it off the wrong
+percentage.** The principle behind it is right: SB2 cannot grant a preference over shares
+it has already sold, so the pref should cover only the part of each exit SB2 still owns,
+with the rest of NLP's 1x arriving directly. That gives
 
 ```
-pref = (1 − NLPI's onshore share) × $35M
+pref = (1 − the share SB2 sold at the portco level) × $35M
 ```
 
-which makes both conditions coincide: NLP is whole at exactly $35M of exits, and the
-pref is exhausted at the same moment. `[S9]` derives 9.86 as (19.72 + 14.79) / 3.5,
-which reads as though it came out of the two illustrative exits — it did not, and the
-rule holds for any exit sequence. It does, however, hardcode a **1.4%** onshore slice
-(see F2 and F14).
+and makes both conditions coincide — NLP whole at exactly $35M of exits, the pref
+exhausted at the same moment.
+
+The share in that formula has to be one that reaches NLP *without passing through SB2*.
+Only NLPI's **x2 = 12.6%** qualifies, giving **8.74x = $30.59M**. The document nets off
+**x1 = 1.4%** instead — but x1 is NLPF's interest *inside* the fund, and while the pref
+runs SB2 distributes 100% of its receipts to NLPF anyway, so nothing arrives on account
+of x1 outside the pref. The $0.49M that 9.86x nets off never comes.
+
+`[S9]` derives 9.86 as (19.72 + 14.79) / 3.5, which reads as though it came out of the
+two illustrative exits. It did not — the rule holds for any exit sequence — and those two
+exits use the same 1.4% substitution (F2, F14).
 
 ## 2. The document's arithmetic checks out
 
@@ -103,16 +110,19 @@ On the $20M WheelsEye exit that is the difference between:
 Since the revision this is the fault line everything else hangs on, because the pref
 multiple is netted against the same percentage:
 
-| Onshore slice | Consistent pref | Holding 9.86x anyway |
-|---|---|---|
-| 1.4% — the worked exits | **9.86x** = $34.51M | correct; NLP whole at exactly $35M |
-| 12.6% — the structure `[S5][S10]` | **8.74x** = $30.59M | pref clears only after $39.49M of exits, over-repaying NLP by **$4.49M** out of Class A and Class B1 |
+| Netted against | What it is | Pref | Multiple |
+|---|---|---|---|
+| **x2 = 12.6%** → NLPI | portco shares SB2 sold — reaches NLP without touching the fund | $30.59M | **8.74x** |
+| x1 = 1.4% → NLPF | an interest *inside* the fund, paid out of SB2's own distributions | $34.51M | 9.86x, as drafted |
+
+Holding 9.86x while NLPI takes 12.6% means the pref clears only after $39.49M of exits,
+by which point NLP has taken **$4.49M more than its 1x**, out of Class A and the old LPs.
 
 ### F14 — the pref multiple should be drafted as a formula, not a number
 
 9.86x is not an independently negotiated term, and `[S6]` says the exact x1 and x2 will
-differ from the illustration. Every change to them moves the multiple. Fixing 9.86x in
-the documents while x2 settles at 12.6% is the $4.49M above.
+differ from the illustration. Every change to them moves the multiple — as does the fix
+to F8, if NLPI's 1x ends up being repaid onshore through an enlarged slice instead.
 
 Draft it as an amount with its derivation — "$34.51M, being $35M less NLPI's onshore
 percentage of it" — or as a cap on aggregate priority receipts across both NLP entities,
@@ -128,16 +138,17 @@ the feeder to **1.5% of absolute ≈ 2.2% of Class B**.
 
 ### Closed by the 27 August revision
 
-**F3 — the pref now clears exactly at the marker.** Before the revision, `[S9]` declared
-the pref satisfied after SB2 had received $19.72M + $14.79M = $34.51M against a $35M
-pref — $0.49M short. Resizing to 9.86x makes the marker exact on the document's own
-split: the pref is exhausted to the cent and NLP has been repaid exactly $35.00M across
-both entities. The reasoning is sound. What survives is conditional rather than
-arithmetic, and it is F2.
+**F3 — the marker is now exact.** Before the revision, `[S9]` declared the pref satisfied
+after SB2 had received $19.72M + $14.79M = $34.51M against a $35M pref — $0.49M short.
+Resizing to 9.86x makes it exact on the document's own split: the pref is exhausted to
+the cent and NLP has been repaid exactly $35.00M across both entities. What survives is
+not the arithmetic but the basis — the principle is applied to x1 rather than x2, which
+is F2.
 
 **F5 — "the first 35M" is now measured across both entities.** The open question was
-whether NLPI's onshore receipts counted towards NLP's first $35M. The sizing answers it:
-they do, by being netted off the pref ex ante. One drafting point remains — state the
+whether NLP's receipts outside the pref counted towards its first $35M. The sizing
+answers it in principle: they do, by being netted off the pref ex ante — though it nets
+off x1 rather than the x2 that actually arrives outside it (F2). One drafting point remains — state the
 priority return as an aggregate $35M across NLPF and NLPI, with the pref expressed as
 the balance after NLPI's onshore receipts, so the netting is explicit and cannot be
 applied twice. Netting it twice would leave NLP $0.48M short of its 1x and start the

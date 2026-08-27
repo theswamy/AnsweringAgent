@@ -187,8 +187,8 @@ and [`docs/presentation/sb2-nlp-flow.html`](docs/presentation/sb2-nlp-flow.html)
 The headline: the document's own arithmetic is sound, but the liqpref repays NLPF
 while NLPI funded 90% of the cheque (its own open question, asked twice), and the worked
 exits split the buyer's cheque on x1 where the structure says x2 — which now also sets
-the pref multiple, since 9.86x is $35M netted against a 1.4% onshore slice. At x2 =
-12.6% it should be 8.74x.
+the pref multiple. 9.86x nets $35M against a 1.4% slice that never arrives outside the
+pref; netted against the 12.6% SB2 actually sold at the portco level, it is 8.74x.
 
 ```bash
 python -m unittest discover -s deal_agent/tests -t .          # 45 tests, no deps

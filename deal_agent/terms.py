@@ -63,14 +63,17 @@ class DealTerms:
 
     @property
     def feeder_liqpref(self) -> float:
-        """9.86x on $3.5M = $34.51M.
+        """9.86x on $3.5M = $34.51M, as the document states it.
 
         The pref is sized to the NLP cheque rather than to the feeder's own
         money - that is the mechanism by which NLPI's onshore purchase price is
-        repaid through the Mauritius entity. It stops $0.49M short of the full
-        $35M because SB2 cannot grant a pref over the shares it has already sold
-        to NLPI: that slice of every exit is paid onshore, direct, and makes up
-        the difference. See `pref_consistency`.
+        repaid through the Mauritius entity - and it is held short of the full
+        $35M on the principle that SB2 cannot grant a pref over shares it has
+        already sold. The principle is right; 98.6% applies it to the wrong
+        percentage. What SB2 sold away at the portco level is x2 = 12.6% to
+        NLPI; x1 = 1.4% is NLPF's interest *inside* the fund, which is paid out
+        of SB2's own distributions and so never reaches NLP outside the pref.
+        The consistent figure is 8.74x. See `pref_consistency`.
         """
         return self.feeder_contribution * self.feeder_liqpref_multiple
 
@@ -203,10 +206,14 @@ def pref_consistency(
     `d * X` onshore and `(1 - d) * X` through the pref, so it is whole at
     X = $35M of exits and the pref is exhausted at the same moment.
 
-    That makes the multiple a *derived* number, not an independent term. At
-    d = 1.4% it is 9.86x, which is what the document now says. At d = x2 = 12.6%
-    - which is what the structure says NLPI actually owns - it is 8.74x, and the
-    stated 9.86x over-repays NLP out of Class A and Class B1.
+    That makes the multiple a *derived* number, not an independent term, and
+    `d` has to be a *portco-level* percentage - money that reaches NLP without
+    passing through SB2. Only NLPI's x2 = 12.6% qualifies, which gives 8.74x.
+    The document's 9.86x nets off x1 = 1.4% instead, but x1 is NLPF's interest
+    inside the fund: during the pref period SB2 distributes 100% to NLPF anyway,
+    so nothing arrives on account of x1 outside the pref and the $0.49M netted
+    off is phantom. Holding 9.86x while NLPI takes 12.6% over-repays NLP out of
+    Class A and Class B1.
     """
     d = terms.x1_class_b if onshore_pct is None else onshore_pct
     consistent = (1 - d) * terms.check

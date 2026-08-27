@@ -603,22 +603,28 @@
   </section>
 
   <!-- 7 -->
-  <section class="slide" data-title="Why 9.86x">
+  <section class="slide" data-title="Sizing the pref">
     <p class="kicker">Step 4 · The pref, and why it is not a round number</p>
     <h2>You cannot grant a preference over shares you no longer own</h2>
-    <div class="formula" data-step="1">pref = ( 1 − NLPI's onshore share ) × $35M = 0.986 × $35M = <em>$34.51M</em> = 9.86 × $3.5M</div>
-    <p class="body" data-step="2">NLP's 1x back has to come from two places, because its money went to
-      two places. SB2 can only give a preference over the exits it still owns — it has already sold
-      1.4% of each position to NLPI, and that slice is paid to NLPI directly, onshore. So the pref
-      covers $34.51M and the onshore receipts cover the remaining $0.49M.</p>
-    <div class="tiles" data-step="3">
-      <div class="tile"><span class="k">Through the pref</span><span class="v">$34.51M</span><span class="n">SB2 → NLPF, Mauritius</span></div>
-      <div class="tile"><span class="k">Direct, onshore</span><span class="v">$0.49M</span><span class="n">buyers → NLPI, India</span></div>
-      <div class="tile lead"><span class="k">NLP's 1x</span><span class="v">$35.00M</span><span class="n">whole at exactly $35M of exits</span></div>
+    <p class="body">NLP's 1x has to come back from two places, because its money went to two places.
+      NLPI owns 12.6% of each position outright — buyers pay it directly, onshore, at every exit, with
+      no preference involved. The preference can only run over the 87.4% SB2 still owns. So it should
+      be sized to the balance:</p>
+    <div class="formula" data-step="1">pref = ( 1 − <em>the share SB2 sold at the portco level</em> ) × $35M</div>
+    <div class="scroller" data-step="2">
+      <table>
+        <thead><tr><th>Netted against…</th><th>What it is</th><th class="f">Pref</th><th class="f">Multiple on $3.5M</th></tr></thead>
+        <tbody>
+          <tr><td class="lead">x2 = 12.6% → NLPI</td><td>portco shares SB2 sold — reaches NLP without touching the fund</td><td class="f good">$30.59M</td><td class="f good">8.74x</td></tr>
+          <tr><td class="lead">x1 = 1.4% → NLPF</td><td>an interest <em>inside</em> the fund, paid out of SB2's own distributions</td><td class="f warn">$34.51M</td><td class="f warn">9.86x · as drafted</td></tr>
+        </tbody>
+      </table>
     </div>
-    <p class="body" data-step="4">The two conditions coincide by construction: NLP is made whole at the
-      same moment the pref is exhausted. Neither party over- or under-recovers.
-      <span class="sid">S5</span> <span class="sid">S9</span></p>
+    <div class="note" data-step="3"><b>the principle is right, the percentage is not</b>While the
+      preference runs, SB2 distributes 100% of its receipts to NLPF — so nothing reaches NLP on
+      account of the 1.4% outside the preference, and the $0.49M that 9.86x nets off never arrives.
+      The only money that comes back outside the preference is NLPI's 12.6%, which makes the
+      consistent figure <strong>8.74x</strong>. <span class="sid">S5</span> <span class="sid">S9</span></div>
   </section>
 
   <!-- 8 -->
@@ -667,7 +673,7 @@
           <g data-step="1">
             <rect x="500" y="278" width="190" height="64" rx="4" fill="none" stroke="currentColor" stroke-width="1.25"></rect>
             <text x="516" y="304" font-family="'IBM Plex Sans', sans-serif" font-size="12.5" fill="currentColor" font-weight="600">NLPF liqpref</text>
-            <text x="516" y="323" font-family="'IBM Plex Mono', monospace" font-size="10.5" fill="currentColor" opacity="0.72">$34.51M, then done</text>
+            <text x="516" y="323" font-family="'IBM Plex Mono', monospace" font-size="10.5" fill="currentColor" opacity="0.72">until NLP is whole</text>
             <line x1="440" y1="310" x2="494" y2="310" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#a2)"></line>
             <text x="467" y="266" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="10.5" fill="currentColor">100% until repaid</text>
           </g>
@@ -764,7 +770,7 @@
     <p class="body">The structure sells NLPI <strong>12.6%</strong> of each portco position
       <span class="sid">S5</span>, and the tail duly splits each cheque 88 / 12 <span class="sid">S10</span>.
       But the worked exits split it 98.6 / <strong>1.4</strong> — and 1.4% is x1, a percentage of Class B
-      <em>inside the fund</em>, not of a portco position. The 9.86x pref is netted against that same 1.4%.</p>
+      <em>inside the fund</em>, not of a portco position. The same substitution sizes the pref.</p>
     <div class="scroller" data-step="1">
       <table>
         <thead>
