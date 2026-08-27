@@ -1,0 +1,155 @@
+# SB2 / NLP secondary — analysis
+
+Analysis of the transaction document (Google Doc `1vepHdrEY2IuuM9TjwH0ced5FOrRerA0ugtr0gxD8tFU`,
+read 2026-08-27). Section ids `[S1]`–`[S10]` refer to `deal_agent/document.py`, which
+holds the document verbatim; every number below is computed by `deal_agent` and
+covered by its tests.
+
+```
+python -m deal_agent report          # everything in this note, regenerated
+python -m deal_agent ask "..."       # ask the agent
+```
+
+## 1. What the transaction is
+
+NLP buys **$35M of exposure to SB2 from the existing Class B LPs at a 35% discount**,
+takes its 1x back ahead of everyone, and then shares pari-passu `[S3]`. Because only
+part of the cheque can move offshore-to-offshore, it arrives through two entities `[S5]`:
+
+| Entity | Amount | What it buys | Where it sits |
+|---|---|---|---|
+| NLPF (Singapore feeder) | $3.5M (10%) | x1 = 1.4% of Class B, with a **10x liqpref** | Primary capital into SB2 Mauritius |
+| NLPI (India fund) | $31.5M (90%) | x2 = 12.6% of SB2's stake in each portco | Direct onshore shareholdings |
+
+So $3.5M is primary money into the fund and $31.5M is a secondary purchase of assets
+*from* the fund. The 10x pref on the feeder is not a return expectation — it is sized
+at exactly $35M, i.e. the whole cheque, and exists to route NLPI's onshore purchase
+price back through Mauritius.
+
+## 2. The document's arithmetic checks out
+
+Recomputed from the fund's primitives — 2%/98% commitments, $35M of ROC still to
+return, 30% carry above it — the headline figures are right:
+
+| | Document | Recomputed |
+|---|---|---|
+| Profit above ROC | $325M | $325.00M |
+| GP stake | "about $100M" | $102.05M (**31.40%** of profit) |
+| LP profits | "about $225M" | $222.95M (**68.60%**) |
+| LP NAV | "effectively $260M" | $257.25M |
+| Cheque as % of LP | 13% | 13.61% |
+| … grossed up for the 35% discount | 20% | 20.93% |
+| … as % of all profit | 14.1% | 14.36% |
+| Post-deal tail | 31.4 / 54.5 / 14.1 | closes to 100.0% |
+
+Two structural points worth stating explicitly, because they are what make the
+document's fixed ratios legitimate:
+
+- With a single 1x hurdle and no catch-up tiers, the GP's share of profit is
+  **31.40% at any profit level**. Quoting fixed ratios instead of a tiered waterfall
+  changes nobody's economics.
+- The secondary is sold out of Class B, so **Class A is not diluted**. NLP's 14.1%
+  comes entirely out of Class B's 68.60%, leaving old LPs 54.5%. That is why `[S10]`
+  can give Class A 31% of absolute while the fund only receives 88% of each cheque —
+  31.4/87.4 = 35.9% of SB2's receipts.
+
+## 3. Where it does not close
+
+Thirteen findings — seven high severity, three medium, three low. The five that block
+papering are set out first. `python -m deal_agent findings` prints the whole register
+with live numbers and a suggested fix for each.
+
+### F8 — the pref repays the wrong entity (the document's own open question, asked twice)
+
+`[S8]` and `[S9]` both stop to ask: *"NLP_F then distributes pro-rata to NLP in India —
+how does the NLP India fund receive its returns?"* This is the gap everything else
+rests on. NLPI funds $31.5M of the $35M; the pref that repays that $35M is held by
+NLPF; nothing in the document creates a path from NLPF's receipts to NLPI. Until the
+return path exists there is no structure. The alternative — repay NLPI at the portco
+level by giving it an enlarged onshore slice until it is whole — changes every number
+in the worked exits.
+
+### F2 — the worked exits split the buyer's cheque on x1, not x2
+
+`[S5]` sells NLPI 12.6% of each portco position and `[S10]` duly splits the cheque
+88/12. But `[S8]` and `[S9]` split it **98.6/1.4** — and 1.4% is x1, a percentage of
+Class B inside the fund, not a percentage of a portco position. `[S8]` makes the
+substitution visible: it computes NLP's slice as "2.5% × x2_WE" and then prints 0.035%
+of WheelsEye, which is 2.5% × **1.4%**. At x2 it is 0.315%.
+
+On the $20M WheelsEye exit that is the difference between:
+
+| | NLPI (onshore) | SB2 (Mauritius) |
+|---|---|---|
+| As written `[S8]` | $0.28M | $19.72M |
+| At x2 = 12.6% | $2.52M | $17.48M |
+
+### F3 — "LIQPREF SATISFIED" is marked before the pref is repaid
+
+`[S9]` declares the pref satisfied after SB2 has received $19.72M + $14.79M = **$34.51M**
+against a $35M pref — $0.49M short on the document's own numbers. On the x2-consistent
+split, SB2 receives only $30.59M of the same $35M of exits and **$4.41M is still
+outstanding**, so the tail in `[S10]` would begin part-way through the next $10M
+tranche, not at the start of it. The straddling tranche has to be split; the absolute
+31.4 / 54.5 / 14.1 shares only hold on distributions that fall entirely after the pref.
+
+### F4 — x1 appears in three different denominators
+
+1.4% is defined as a share of Class B `[S5]`, used as a share of a portco cheque
+`[S8][S9]`, and appears as 2% of absolute in the tail `[S10]`. These are three different
+numbers. 1.4% of Class B is 0.96% of absolute, which puts NLP's total at 13.56%, not
+14.1%. Fixing NLP's entitlement at 14.1% and NLPI's direct stake at 12.6% back-solves
+the feeder to **1.5% of absolute ≈ 2.2% of Class B**.
+
+### F5 — does NLPI's onshore money count towards "the first 35M"?
+
+`[S4]` says the first $35M goes to NLP. The worked exits instead run the $35M pref
+purely through SB2's receipts while NLPI separately banks its slice of every cheque —
+so NLP is made whole on more than $35M before the tail starts. Over the document's
+own $45M of exits NLP receives **$40.74M** on that reading and **$36.41M** if onshore
+proceeds count against the pref. The difference comes straight out of Class A and
+Class B1, and on a larger first exit it is not a rounding matter.
+
+### The rest
+
+| | |
+|---|---|
+| **F7** | The 10x pref is a **$35M senior claim funded with $3.5M**, ranking ahead of both existing classes, and it is participating — `[S10]` leaves Class B2 sharing in the tail after repayment. Needs to be stated as such, and consented to. |
+| **F10** | $31.5M buys Indian portco shares from a Mauritius fund at a discount to carrying value. Fair-value pricing floor on the inbound leg, capital-gains withholding at the SB2 level, and `[S6]` only *assumes* the leakage is grossed up — yet that gross-up determines x2, and therefore every exit split. |
+| **F9** | The pro-rata exit undertaking `[S7]` needs SHA amendments at the India-domiciled portcos too, not only the Delaware ones, and engages other shareholders' ROFR / tag / drag rights and IPO lock-ups. |
+| **F6** | `[S6]` assumes both classes are "whole", but the $35M that makes that true is paid to Class B. Class A's 2% of the remaining ROC — $0.70M — has no source. |
+| **F1** | `[S2]`'s post-ROC cap table sums to 101%: Class B should be 68.6%, not 69.6%. |
+| **F11 / F12** | Rounding gaps of 0.2–0.9pp carried into the operative ratios; "mg" is never expanded and no per-portco position schedule ties x2 to the $31.5M. |
+
+## 4. What the deal is worth to each side
+
+NLP is repaid first, so it is whole as long as the remaining portfolio returns $35M
+against a $360M carrying value, and makes **2.31x** if it returns all of it.
+
+For the old LPs the trade is **liquidity, not upside**. They swap 14.1% of all future
+profit for $35M today — and because $35M is close to the $34.30M of ROC they were owed
+anyway, indifference sits at roughly **$40M of total future proceeds**. Above that they
+are paying with upside:
+
+| Realisation | Class B1 with the deal | Without | Give-up |
+|---|---|---|---|
+| 0.25× NAV ($90M) | $65.0M | $72.0M | −$7.1M |
+| 0.50× NAV ($180M) | $114.0M | $133.8M | −$19.7M |
+| 1.00× NAV ($360M) | $212.1M | $257.3M | −$45.1M |
+| 1.50× NAV ($540M) | $310.2M | $380.7M | −$70.5M |
+
+That is the 35% discount doing exactly what it is meant to do, and immediate 1x DPI
+is a defensible thing to buy. But it should go to the LPs framed as the price of
+de-risking, with this table attached — not as a neutral restructuring.
+
+## 5. What to fix before papering
+
+1. **Resolve the NLPF → NLPI return path (F8).** Everything else is downstream.
+2. Pick one basis for each percentage and restate the worked exits at 87.4/12.6 (F2, F4).
+3. Say whether the $35M priority return is measured across both NLP entities (F5).
+4. Re-size the illustrative exits so the pref genuinely clears, and show the split
+   transition tranche (F3).
+5. Price the onshore transfer taxes and confirm the discount survives the pricing
+   floor, then re-derive x1 and x2 from the grossed-up cheque (F10).
+6. Attach a per-portco schedule — holding, carrying value, the 12.6% slice in shares
+   and dollars, summing to $31.5M (F12).
