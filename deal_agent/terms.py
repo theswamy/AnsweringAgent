@@ -10,7 +10,7 @@ All money is in $M unless a name says otherwise; all shares are fractions.
 """
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 
 
 @dataclass(frozen=True)
@@ -240,6 +240,43 @@ def pref_consistency(
         "over_recovery": over,
         "transfer_from_other_classes": over * (1 - nlp_tail),
     }
+
+
+def routing_model(
+    offshore_fraction: float,
+    terms: DealTerms = DealTerms(),
+) -> tuple[DealTerms, "Economics", float]:
+    """Re-derive the structure for a different offshore / onshore split of the cheque.
+
+    How much of the $35M goes offshore-to-offshore into SB2 Mauritius, rather than
+    onshore into the portcos, changes none of the economics: NLP still buys 14.1%
+    of the fund at the same discount, and distributions above the priority return
+    still split 31.4 / 54.5 / 14.1. What it changes is the plumbing - x1 and x2,
+    what fraction of each exit cheque reaches the fund, the size of the
+    preference, and Class B2's share of SB2's receipts.
+
+    NLP's 14.1% is split pro rata to the two cheques, as the document does. Note
+    that splitting the stated 14.1% (rather than rounding each leg to one decimal)
+    makes x1 + x2 come to 14.1% exactly, where the document's 1.4% + 12.6% = 14.0%.
+
+    Returns the adjusted terms, the derived economics, and the preference amount.
+
+        >>> t, e, pref = routing_model(0.20)
+        >>> round(t.feeder_contribution, 2), round(pref, 2)
+        (7.0, 31.05)
+    """
+    if not 0 < offshore_fraction < 1:
+        raise ValueError("offshore_fraction must be in (0, 1)")
+    total = terms.stated_tail_nlp
+    adjusted = replace(
+        terms,
+        feeder_share_of_check=offshore_fraction,
+        x1_class_b=offshore_fraction * total,
+        x2_portco=(1 - offshore_fraction) * total,
+    )
+    econ = derive(adjusted)
+    preference = (1 - adjusted.x2_portco) * adjusted.check
+    return adjusted, econ, preference
 
 
 def old_lp_tradeoff(

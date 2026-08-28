@@ -105,3 +105,87 @@ class FlatRatiosTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class RoutingModelTest(unittest.TestCase):
+    """Routing the cheque differently changes the plumbing, not the economics.
+
+    Pins the two models in docs/ROUTING_MODELS.md.
+    """
+
+    def test_ten_percent_offshore(self):
+        from deal_agent.terms import routing_model
+
+        terms, econ, pref = routing_model(0.10)
+        self.assertAlmostEqual(terms.feeder_contribution, 3.50, places=2)
+        self.assertAlmostEqual(terms.onshore_contribution, 31.50, places=2)
+        self.assertAlmostEqual(terms.x1_class_b, 0.0141, places=6)
+        self.assertAlmostEqual(terms.x2_portco, 0.1269, places=6)
+        self.assertAlmostEqual(pref, 30.56, places=2)
+        self.assertAlmostEqual(pref / terms.feeder_contribution, 8.73, places=2)
+        self.assertAlmostEqual(econ.sb2_share_class_b2, 0.0161, places=4)
+
+    def test_twenty_percent_offshore(self):
+        from deal_agent.terms import routing_model
+
+        terms, econ, pref = routing_model(0.20)
+        self.assertAlmostEqual(terms.feeder_contribution, 7.00, places=2)
+        self.assertAlmostEqual(terms.onshore_contribution, 28.00, places=2)
+        self.assertAlmostEqual(terms.x1_class_b, 0.0282, places=6)
+        self.assertAlmostEqual(terms.x2_portco, 0.1128, places=6)
+        self.assertAlmostEqual(pref, 31.05, places=2)
+        self.assertAlmostEqual(pref / terms.feeder_contribution, 4.44, places=2)
+        self.assertAlmostEqual(econ.sb2_share_class_b2, 0.0318, places=4)
+
+    def test_the_economics_are_identical_across_routings(self):
+        from deal_agent.terms import routing_model
+
+        for fraction in (0.05, 0.10, 0.20, 0.35, 0.50):
+            terms, econ, pref = routing_model(fraction)
+            # x1 + x2 is NLP's whole share, and the absolute split never moves
+            self.assertAlmostEqual(terms.x1_class_b + terms.x2_portco, 0.141, places=9)
+            self.assertAlmostEqual(econ.tail_class_a, 0.314, places=9)
+            self.assertAlmostEqual(econ.tail_class_b1, 0.545, places=9)
+            self.assertAlmostEqual(econ.tail_nlp_total, 0.141, places=9)
+            # both vehicles always pay the same price per unit of economics
+            feeder_price = terms.feeder_contribution / (terms.x1_class_b * terms.nav)
+            onshore_price = terms.onshore_contribution / (terms.x2_portco * terms.nav)
+            self.assertAlmostEqual(feeder_price, onshore_price, places=9)
+            # and the two legs always return exactly the cheque
+            self.assertAlmostEqual(pref + terms.x2_portco * terms.check, terms.check, places=9)
+
+    def test_the_two_legs_total_the_inverse_of_the_offshore_fraction(self):
+        from deal_agent.terms import routing_model
+
+        for fraction in (0.10, 0.20, 0.25):
+            terms, _, pref = routing_model(fraction)
+            legs = terms.check / terms.feeder_contribution
+            self.assertAlmostEqual(legs, 1 / fraction, places=6)
+            self.assertAlmostEqual(
+                (pref + terms.x2_portco * terms.check) / terms.feeder_contribution,
+                legs,
+                places=6,
+            )
+
+    def test_worked_exits_under_both_models(self):
+        from deal_agent.terms import routing_model
+
+        expected = {
+            0.10: [(2.54, 17.46, 17.46), (1.90, 13.10, 13.10), (1.27, 8.73, 0.0)],
+            0.20: [(2.26, 17.74, 17.74), (1.69, 13.31, 13.31), (1.13, 8.87, 0.0)],
+        }
+        for fraction, rows in expected.items():
+            terms, econ, pref = routing_model(fraction)
+            result = run_waterfall(
+                DOCUMENT_EXITS, terms=terms, econ=econ,
+                convention=SplitConvention.STRUCTURE, liqpref=pref,
+            )
+            for dist, (direct, sb2, to_pref) in zip(result.events, rows):
+                self.assertAlmostEqual(dist.nlpi_direct, direct, places=2)
+                self.assertAlmostEqual(dist.sb2_receipts, sb2, places=2)
+                self.assertAlmostEqual(dist.to_nlpf_pref, to_pref, places=2)
+            # the tail tranche lands on the same absolute split either way
+            tail = result.events[2]
+            self.assertAlmostEqual(tail.class_a, 3.14, places=2)
+            self.assertAlmostEqual(tail.class_b1, 5.45, places=2)
+            self.assertAlmostEqual(tail.nlp_total, 1.41, places=2)

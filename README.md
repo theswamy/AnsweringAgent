@@ -190,7 +190,9 @@ and [`docs/presentation/sb2-nlp-flow.html`](docs/presentation/sb2-nlp-flow.html)
 14-slide walkthrough of the flow for people who need the logic rather than the register
 (open it in a browser; arrow keys advance it).
 [`docs/presentation/sb2-nlp-onepager.html`](docs/presentation/sb2-nlp-onepager.html) is a
-one-page summary of terms — the figures without the derivations.
+one-page summary of terms — the figures without the derivations — and
+[`docs/ROUTING_MODELS.md`](docs/ROUTING_MODELS.md) compares routing 10% and 20% of the
+cheque offshore (`terms.routing_model()` re-derives the structure for any split).
 The headline: the document's own arithmetic is sound, but two consecutive tranches of
 the same Niyo secondary sell 1.4% and 12% pro-rata to NLPI. That percentage also sizes the
 pref, since the pref plus NLPI's own sales must add to 10x of the feeder's $3.5M — 9.86x +
@@ -198,7 +200,7 @@ pref, since the pref plus NLPI's own sales must add to 10x of the feeder's $3.5M
 12.6% transfers $3.85M to NLP from Class A and the old LPs.
 
 ```bash
-python -m unittest discover -s deal_agent/tests -t .          # 54 tests, no deps
+python -m unittest discover -s deal_agent/tests -t .          # 59 tests, no deps
 ```
 
 ---

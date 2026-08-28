@@ -1,0 +1,191 @@
+<title>SB2 / NLP Routing Models</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+  :root {
+    --paper: #f1f4f4; --card: #ffffff; --rule: #d5dcdd; --rule-soft: #e6eaea;
+    --ink: #111a1c; --ink-soft: #3a4a50; --muted: #5f7278;
+    --accent: #0d6068; --accent-dim: #dceceb; --copper: #96501f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0b1214; --card: #121a1d; --rule: #263539; --rule-soft: #1a2427;
+      --ink: #e4eaea; --ink-soft: #bdcacd; --muted: #8a9da3;
+      --accent: #5ecacd; --accent-dim: #10292b; --copper: #d8955f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0b1214; --card: #121a1d; --rule: #263539; --rule-soft: #1a2427;
+    --ink: #e4eaea; --ink-soft: #bdcacd; --muted: #8a9da3;
+    --accent: #5ecacd; --accent-dim: #10292b; --copper: #d8955f;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size: 15.5px; line-height: 1.55; -webkit-font-smoothing: antialiased;
+  }
+  .sheet {
+    max-width: 900px; margin: 0 auto;
+    padding: clamp(2rem, 5vw, 3.25rem) clamp(1.25rem, 4vw, 2.25rem) 4rem;
+    display: grid; row-gap: 1.75rem;
+  }
+
+  header { display: grid; row-gap: 0.4rem; }
+  h1 {
+    font-family: Spectral, Georgia, serif; font-weight: 600;
+    font-size: clamp(1.6rem, 3.6vw, 2.1rem); line-height: 1.12;
+    letter-spacing: -0.015em; margin: 0;
+  }
+  .sub {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); margin: 0;
+  }
+
+  section { display: grid; row-gap: 0.6rem; }
+  h2 {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); font-weight: 500; margin: 0;
+    padding-bottom: 0.4rem; border-bottom: 1px solid var(--rule);
+  }
+  p { margin: 0; max-width: 78ch; }
+  .soft { color: var(--ink-soft); }
+
+  .scroller { overflow-x: auto; border: 1px solid var(--rule); border-radius: 4px; background: var(--card); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 0.48rem 0.9rem; border-top: 1px solid var(--rule-soft); }
+  thead th {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); font-weight: 500; border-top: none;
+  }
+  thead th.m { color: var(--accent); }
+  td.f, th.f {
+    text-align: right; font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  td.lead { color: var(--ink-soft); }
+  tr.same td { color: var(--muted); }
+  tr.same td.f { color: var(--muted); }
+  tbody tr.rule td { border-top: 1px solid var(--rule); }
+  caption {
+    caption-side: top; text-align: left; padding: 0.75rem 0.9rem 0.5rem;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+  }
+
+  ul { margin: 0; padding-left: 1.15rem; display: grid; row-gap: 0.35rem; }
+  li { max-width: 78ch; }
+
+  footer {
+    border-top: 1px solid var(--rule); padding-top: 0.85rem;
+    font-size: 0.85rem; color: var(--muted); max-width: 78ch;
+  }
+</style>
+
+<div class="sheet">
+
+  <header>
+    <h1>Routing the $35M: two models</h1>
+    <p class="sub">SB2 / NLP secondary · August 2026</p>
+  </header>
+
+  <section>
+    <h2>What does not change</h2>
+    <p class="soft">NLP's cheque is $35M and buys 14.1% of the fund's economics at a 31.05%
+      discount to carrying value in both models. Above the priority return, distributions split
+      Class A 31.4%, Class B1 54.5%, NLP 14.1% in both. NLP is whole at exactly $35M of exits in
+      both. What changes is how much of that travels through the fund rather than being paid to
+      NLPI directly.</p>
+  </section>
+
+  <section>
+    <h2>The two models</h2>
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr><th>&nbsp;</th><th class="f m">Model A · 10% offshore</th><th class="f m">Model B · 20% offshore</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="lead">NLPF cheque · Singapore feeder into SB2</td><td class="f">$3.50M</td><td class="f">$7.00M</td></tr>
+          <tr><td class="lead">NLPI cheque · onshore India</td><td class="f">$31.50M</td><td class="f">$28.00M</td></tr>
+          <tr class="rule"><td class="lead">x1 — held through the fund, Class B2</td><td class="f">1.41%</td><td class="f">2.82%</td></tr>
+          <tr><td class="lead">x2 — held directly by NLPI</td><td class="f">12.69%</td><td class="f">11.28%</td></tr>
+          <tr class="same"><td class="lead">x1 + x2</td><td class="f">14.10%</td><td class="f">14.10%</td></tr>
+          <tr class="rule"><td class="lead">Every exit cheque: to NLPI</td><td class="f">12.69%</td><td class="f">11.28%</td></tr>
+          <tr><td class="lead">Every exit cheque: to SB2</td><td class="f">87.31%</td><td class="f">88.72%</td></tr>
+          <tr class="rule"><td class="lead">Liquidation preference</td><td class="f">$30.56M</td><td class="f">$31.05M</td></tr>
+          <tr><td class="lead">…as a multiple of the NLPF cheque</td><td class="f">8.73x</td><td class="f">4.44x</td></tr>
+          <tr><td class="lead">NLPI's own sales, in the priority period</td><td class="f">$4.44M</td><td class="f">$3.95M</td></tr>
+          <tr class="same"><td class="lead">Both legs together</td><td class="f">$35.00M · 10.00x</td><td class="f">$35.00M · 5.00x</td></tr>
+          <tr class="rule"><td class="lead">SB2's receipts after the preference — Class A</td><td class="f">35.96%</td><td class="f">35.39%</td></tr>
+          <tr><td class="lead">…Class B1</td><td class="f">62.42%</td><td class="f">61.43%</td></tr>
+          <tr><td class="lead">…Class B2</td><td class="f">1.61%</td><td class="f">3.18%</td></tr>
+          <tr class="same rule"><td class="lead">In absolute terms — A / B1 / NLP</td><td class="f">31.4 / 54.5 / 14.1</td><td class="f">31.4 / 54.5 / 14.1</td></tr>
+          <tr class="same"><td class="lead">Discount to carrying value, both vehicles</td><td class="f">31.05%</td><td class="f">31.05%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>The same exits under each model</h2>
+    <p class="soft">$20M in WheelsEye at $800M, then a $25M secondary in Niyo at $500M in tranches
+      of $15M and $10M.</p>
+    <div class="scroller">
+      <table>
+        <caption>Model A · 10% offshore</caption>
+        <thead><tr><th>Exit</th><th class="f">Cheque</th><th class="f">to NLPI</th><th class="f">to SB2</th><th class="f">of which pref</th><th class="f">Class B2</th><th class="f">Class A</th><th class="f">Class B1</th></tr></thead>
+        <tbody>
+          <tr><td class="lead">WheelsEye</td><td class="f">$20.00M</td><td class="f">$2.54M</td><td class="f">$17.46M</td><td class="f">$17.46M</td><td class="f">—</td><td class="f">—</td><td class="f">—</td></tr>
+          <tr><td class="lead">Niyo · first $15M</td><td class="f">$15.00M</td><td class="f">$1.90M</td><td class="f">$13.10M</td><td class="f">$13.10M</td><td class="f">—</td><td class="f">—</td><td class="f">—</td></tr>
+          <tr><td class="lead">Niyo · next $10M</td><td class="f">$10.00M</td><td class="f">$1.27M</td><td class="f">$8.73M</td><td class="f">—</td><td class="f">$0.14M</td><td class="f">$3.14M</td><td class="f">$5.45M</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="scroller">
+      <table>
+        <caption>Model B · 20% offshore</caption>
+        <thead><tr><th>Exit</th><th class="f">Cheque</th><th class="f">to NLPI</th><th class="f">to SB2</th><th class="f">of which pref</th><th class="f">Class B2</th><th class="f">Class A</th><th class="f">Class B1</th></tr></thead>
+        <tbody>
+          <tr><td class="lead">WheelsEye</td><td class="f">$20.00M</td><td class="f">$2.26M</td><td class="f">$17.74M</td><td class="f">$17.74M</td><td class="f">—</td><td class="f">—</td><td class="f">—</td></tr>
+          <tr><td class="lead">Niyo · first $15M</td><td class="f">$15.00M</td><td class="f">$1.69M</td><td class="f">$13.31M</td><td class="f">$13.31M</td><td class="f">—</td><td class="f">—</td><td class="f">—</td></tr>
+          <tr><td class="lead">Niyo · next $10M</td><td class="f">$10.00M</td><td class="f">$1.13M</td><td class="f">$8.87M</td><td class="f">—</td><td class="f">$0.28M</td><td class="f">$3.14M</td><td class="f">$5.45M</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="soft">In both models the first two exits return NLP exactly $35M, and the third
+      tranche splits $3.14M / $5.45M / $1.41M to Class A, Class B1 and NLP.</p>
+  </section>
+
+  <section>
+    <h2>What differs in consequence</h2>
+    <ul>
+      <li><strong>Where the tail is paid.</strong> Of NLP's 14.1%, Model A pays 12.69% onshore and
+        1.41% through the fund; Model B pays 11.28% onshore and 2.82% through the fund. Model B
+        routes twice as much of NLP's long-run share through Mauritius.</li>
+      <li><strong>The onshore purchase.</strong> $31.50M in Model A against $28.00M in Model B —
+        the base on which Indian transfer pricing and capital gains withholding apply.</li>
+      <li><strong>The preference multiple.</strong> 8.73x against 4.44x. The dollar amount is
+        almost identical ($30.56M against $31.05M); the multiple differs because the NLPF cheque it
+        is measured on doubles.</li>
+      <li><strong>Repatriation.</strong> The preference carries $30.56M in Model A and $31.05M in
+        Model B, so the NLPF-to-NLPI route carries a similar amount in the priority period. Over
+        the tail, Model B leaves more with NLPF.</li>
+      <li><strong>Regulatory headroom.</strong> Model B requires 20% of the cheque to move
+        offshore-to-offshore into SB2 Mauritius, against 10%.</li>
+    </ul>
+  </section>
+
+  <footer>
+    x1 and x2 are NLP's 14.1% split pro rata to the two cheques, which is why they sum to 14.10%
+    exactly here rather than to the 14.0% the previous document's rounded 1.4% and 12.6% produced.
+    All figures are recomputed from the final cheque and NAV at signing.
+  </footer>
+
+</div>
