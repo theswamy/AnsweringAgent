@@ -468,8 +468,8 @@
     <p class="kicker">Transaction walkthrough · 27 August 2026</p>
     <h1>How the money moves</h1>
     <p class="lede">NLP is buying $35M of exposure to SB2 from the existing LPs. This is the
-      flow that results — where each dollar of every future exit goes, in what order, and
-      which single number the whole structure still turns on.</p>
+      flow that results — where each dollar of every future exit goes, in what order, and why the
+      priority return belongs in the documents as a formula rather than a multiple.</p>
     <p class="body mono" style="font-size:0.8rem">Arrow keys or space to advance · 14 slides</p>
   </section>
 
@@ -555,7 +555,7 @@
     <h2>Only a tenth of the money can go offshore-to-offshore</h2>
     <figure>
       <div class="frame">
-        <svg viewBox="0 0 880 300" role="img" aria-label="NLP invests through two entities: NLPF in Singapore puts $3.5M of primary capital into SB2 Mauritius for Class B2 with a 9.86x preference, while NLPI in India spends $31.5M buying 12.6% of SB2's stake in each portfolio company directly onshore.">
+        <svg viewBox="0 0 880 300" role="img" aria-label="NLP invests through two entities: NLPF in Singapore puts $3.5M of primary capital into SB2 Mauritius for Class B2 with a liquidation preference, while NLPI in India spends $31.5M buying 12.6% of SB2's stake in each portfolio company directly onshore.">
           <defs>
             <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
               <path d="M 0 1 L 9 5 L 0 9 z" fill="currentColor"></path>
@@ -579,7 +579,7 @@
             <text x="36" y="164">$35M cheque</text>
             <text x="316" y="81">10% of the cheque</text>
             <text x="316" y="249">90% of the cheque</text>
-            <text x="636" y="81">new Class B2 + 9.86x pref</text>
+            <text x="636" y="81">new Class B2 + liqpref</text>
             <text x="636" y="249">direct shareholdings, x2 of each</text>
           </g>
           <g fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#a1)">
@@ -613,21 +613,21 @@
       <table>
         <thead><tr><th>Leg</th><th>Route</th><th class="f">Multiple</th><th class="f">Amount</th></tr></thead>
         <tbody>
-          <tr><td class="lead">The liqpref</td><td>SB2 → NLPF, in Mauritius</td><td class="f">9.86x</td><td class="f">$34.51M</td></tr>
-          <tr><td class="lead">Pro-rata share sales</td><td>buyers → NLPI, onshore in India</td><td class="f">0.14x</td><td class="f">$0.49M</td></tr>
+          <tr><td class="lead">The liqpref</td><td>SB2 → NLPF, in Mauritius</td><td class="f">8.74x</td><td class="f">$30.59M</td></tr>
+          <tr><td class="lead">Pro-rata share sales</td><td>buyers → NLPI, onshore in India</td><td class="f">1.26x</td><td class="f">$4.41M</td></tr>
           <tr class="total"><td>NLP's 1x, settled</td><td></td><td class="f good">10.00x</td><td class="f good">$35.00M</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="body" data-step="2">This is why the pref is 9.86x rather than a round 10x. SB2 cannot
-      prefer what it no longer owns — NLPI sells its own shares alongside SB2 at every exit and keeps
-      those proceeds, so the pref is sized to the balance. The two legs are exhausted at the same
-      moment, and NLP is whole at exactly $35M of exits. <span class="sid">S5</span>
-      <span class="sid">S9</span></p>
-    <div class="note" data-step="3"><b>the split of the legs is still open</b>The total is 10x however
-      NLPI's pro-rata sale is sized. As drafted it sells 1.4% of each cheque, giving 9.86x + 0.14x.
-      If it sells the 12.6% that <span class="sid">S5</span> says it owns, the legs are
-      <strong>8.74x + 1.26x</strong> — same $35M, different pref. Next slide but one.</div>
+    <p class="body" data-step="2">This is why the pref is not a round 10x. SB2 cannot prefer what it no
+      longer owns — NLPI sells its own 12.6% alongside SB2 at every exit and keeps those proceeds — so
+      the pref covers only SB2's 87.4%. Both legs are exhausted at the same moment, and NLP is whole
+      at exactly $35M of exits.</p>
+    <div class="note" data-step="3"><b>so it is drafted as an entitlement, not a multiple</b>8.74x is
+      what the arithmetic gives <em>today</em>: it moves with the final x1 and x2, with how much of
+      the book NLPI can hold at all, and with where the cheques happen to fall. The documents should
+      carry the rule — <strong>100% of the first $35M, then 14.1%, measured across both NLP
+      vehicles</strong> — and let the multiple be its consequence.</div>
   </section>
 
   <!-- 8 -->
@@ -725,23 +725,24 @@
 
   <!-- 9 -->
   <section class="slide" data-title="Worked exits">
-    <p class="kicker">Step 6 · The document's own example</p>
+    <p class="kicker">Step 6 · The worked example</p>
     <h2>$35M of exits repays NLP exactly, to the cent</h2>
     <div class="scroller">
       <table>
         <thead>
-          <tr><th>Exit</th><th class="f">Cheque</th><th class="f">NLPI onshore</th><th class="f">SB2</th><th class="f">Pref left</th></tr>
+          <tr><th>Exit</th><th class="f">Cheque</th><th class="f">→ NLPI</th><th class="f">→ SB2</th><th class="f">Priority left</th></tr>
         </thead>
         <tbody>
-          <tr><td class="lead">WheelsEye · 2.5% at $800M</td><td class="f">$20.00M</td><td class="f">$0.28M</td><td class="f">$19.72M</td><td class="f">$14.79M</td></tr>
-          <tr><td class="lead">Niyo · first tranche of a $25M secondary</td><td class="f">$15.00M</td><td class="f">$0.21M</td><td class="f">$14.79M</td><td class="f good">$0.00M</td></tr>
-          <tr class="total"><td>NLP repaid</td><td class="f">$35.00M</td><td class="f">$0.49M</td><td class="f">$34.51M</td><td class="f good">satisfied</td></tr>
+          <tr><td class="lead">WheelsEye · 2.5% of the company at $800M</td><td class="f">$20.00M</td><td class="f">$2.52M</td><td class="f">$17.48M</td><td class="f">$15.00M</td></tr>
+          <tr><td class="lead">Niyo · first $15M of a $25M secondary</td><td class="f">$15.00M</td><td class="f">$1.89M</td><td class="f">$13.11M</td><td class="f good">nil</td></tr>
+          <tr class="total"><td>NLP's 1x</td><td class="f">$35.00M</td><td class="f">$4.41M</td><td class="f">$30.59M</td><td class="f good">satisfied</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="body" data-step="1">Every dollar of these two exits goes to NLP, and the last dollar of
-      the pref is the last dollar of the $35M. Nothing reaches the GP or the old LPs yet.
-      <span class="sid">S8</span> <span class="sid">S9</span></p>
+    <p class="body" data-step="1">Every dollar of these two exits goes to NLP — $4.41M paid to it
+      directly in India, $30.59M through the preference in Mauritius. Nothing reaches the GP or the
+      old LPs yet. On WheelsEye, NLPI sells 2.5% × 12.6% = <strong>0.315%</strong> of the company and
+      SB2 sells 2.185%.</p>
   </section>
 
   <!-- 10 -->
@@ -768,48 +769,51 @@
   </section>
 
   <!-- 11 -->
-  <section class="slide" data-title="The open number">
-    <p class="kicker">Where it does not close</p>
-    <h2>The same secondary splits two different ways</h2>
-    <p class="body">These are consecutive tranches of the one $25M Niyo sale, as the document sets
-      them out:</p>
+  <section class="slide" data-title="Why a formula">
+    <p class="kicker">Step 8 · What a fixed multiple cannot survive</p>
+    <h2>SB2 has shares NLPI cannot hold</h2>
+    <p class="body">The Delaware-domiciled companies — and any portco whose transfer does not
+      complete — stay wholly with SB2, which sells them in Mauritius. On those exits NLPI receives
+      nothing and 100% of the cheque reaches the fund. So NLPI's slice of any single exit is not
+      12.6%: it only <em>averages</em> 12.6% across the portfolio.</p>
     <div class="scroller" data-step="1">
       <table>
-        <thead><tr><th>Tranche of the $25M Niyo secondary</th><th class="f">To SB2</th><th class="f">To NLPI</th><th class="f">NLPI's slice</th></tr></thead>
+        <thead><tr><th>If the exits repaying the first $35M are…</th><th class="f">Paid to NLPI</th><th class="f">Through the pref</th><th class="f">Multiple</th></tr></thead>
         <tbody>
-          <tr><td class="lead">a) first $15M <span class="sid">S9</span></td><td class="f">$14.79M</td><td class="f">$0.21M</td><td class="f warn">1.4%</td></tr>
-          <tr><td class="lead">b) next $10M <span class="sid">S10</span></td><td class="f">$8.80M</td><td class="f">$1.20M</td><td class="f warn">12%</td></tr>
+          <tr><td class="lead">all positions NLPI holds</td><td class="f">$4.41M</td><td class="f">$30.59M</td><td class="f">8.74x</td></tr>
+          <tr><td class="lead">a mix</td><td class="f">in between</td><td class="f">in between</td><td class="f">in between</td></tr>
+          <tr><td class="lead">all Mauritius-only positions</td><td class="f">nil</td><td class="f">$35.00M</td><td class="f">10.00x</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="body" data-step="2">NLPI's shareholding cannot change between two tranches of the same
-      sale. <span class="sid">S5</span> says it owns <strong>12.6%</strong>; the worked exits compute
-      NLP's slice as “2.5% × x2_WE” but then print the value of <strong>x1 = 1.4%</strong>, which is a
-      percentage of Class B inside the fund, not of a portco position.</p>
-    <div class="note" data-step="3"><b>and it sizes the pref</b>9.86x was derived from the 1.4%
-      version. If 12.6% is right, the second leg is 1.26x and the pref has to be <strong>8.74x</strong>.
-      Leaving it at 9.86x does not change NLP's 1x — but the pref keeps running after NLP is whole,
-      clearing only at $39.49M of exits and transferring <strong>$3.85M</strong>: $1.41M from Class A
-      and $2.44M from the old LPs.</div>
+    <p class="body" data-step="2">Which is why the rule is stated as NLP's entitlement and the
+      preference is whatever balance is left: <strong>Class A then takes exactly 31.4% and the old
+      LPs exactly 54.5%</strong> of every dollar above the priority, whatever the mix turns out to
+      be. A fixed multiple cannot do that.</p>
+    <div class="note" data-step="3"><b>one cap goes with it</b>Where NLPI's stake in the positions it
+      does hold rises above its 14.1% tail share, it over-collects on those exits and a top-up can
+      only stop, not reverse. Capping NLPI's participation at its entitlement fixes it. Left
+      uncapped, selling the NLPI-held positions last leaves NLP <strong>$9.8M</strong> ahead, out of
+      Class A and the old LPs.</div>
   </section>
   <!-- 12 -->
   <section class="slide" data-title="Getting it home">
     <p class="kicker">Where it does not close</p>
-    <h2>Almost all of the 1x lands in the vehicle that funded a tenth of it</h2>
+    <h2>Seven eighths of the 1x lands in the vehicle that funded a tenth of it</h2>
     <blockquote class="quote">“Open Question: NLP_F then distributes pro-rata to NLP in India — how
       does the NLP India fund receive its returns?”
       <cite>Source document, sections S8 and S9 — asked twice</cite></blockquote>
     <p class="body" data-step="1">NLPF and NLPI are both NLP, so this is an intra-group transfer rather
       than an economic mismatch. But it carries nearly all of the money home: NLPI funds
-      <strong>$31.5M</strong> and receives <strong>$0.49M</strong> of the first $35M — the other
-      $34.51M arrives in Singapore.</p>
+      <strong>$31.5M</strong> and receives <strong>$4.41M</strong> of the first $35M — the other
+      <strong>$30.59M</strong> arrives in Singapore.</p>
     <p class="body" data-step="2">So the route has to be papered rather than assumed: how value leaves
       NLPF, the tax on each hop, and whether both vehicles carry the same LP base. If they do, this is
       mechanics — for 99% of the recovery. If they do not, the allocation between them stops being
       mechanics.</p>
-    <div class="note" data-step="3"><b>it interacts with the previous slide</b>A larger pro-rata slice
-      for NLPI is one way to bring more of the recovery home directly: at 12.6% it receives $4.41M of
-      the first $35M instead of $0.49M, and less has to be repatriated at all.</div>
+    <div class="note" data-step="3"><b>and the Mauritius-only positions make it worse</b>Every exit
+      NLPI cannot participate in sends 100% of the cheque to SB2, so more of the recovery lands
+      offshore and more has to be repatriated. The route is not a detail to paper later.</div>
   </section>
   <!-- 13 -->
   <section class="slide" data-title="What each side makes">
@@ -841,21 +845,23 @@
   <!-- 14 -->
   <section class="slide" data-title="Where it stands">
     <p class="kicker">Where it stands</p>
-    <h2>The arithmetic is sound. The plumbing is not finished.</h2>
+    <h2>What the rewrite changed, and what is still open</h2>
     <div class="tiles">
-      <div class="tile"><span class="k">Findings open</span><span class="v">12</span><span class="n">5 high · 4 medium · 3 low</span></div>
-      <div class="tile lead"><span class="k">Closed 27 Aug</span><span class="v">2</span><span class="n">by restating the pref at 9.86x</span></div>
-      <div class="tile"><span class="k">To settle first</span><span class="v">4</span><span class="n">before this can be papered</span></div>
+      <div class="tile lead"><span class="k">Rewritten</span><span class="v">v2</span><span class="n">arithmetic fixed, preference restated as an entitlement</span></div>
+      <div class="tile"><span class="k">Corrections</span><span class="v">8</span><span class="n">each with its derivation, in the changelog</span></div>
+      <div class="tile"><span class="k">Open items</span><span class="v">6</span><span class="n">before this can be papered</span></div>
     </div>
     <ol class="fixes" data-step="1">
-      <li><span>Settle NLPI's pro-rata slice — 1.4% or 12.6% — and re-derive the pref multiple from it. <span class="ref">F2 · F4 · F14</span></span></li>
-      <li><span>State the priority return as an aggregate $35M across both NLP vehicles, with the pref drafted as the balance after NLPI's own sales. <span class="ref">F5 · F14</span></span></li>
-      <li><span>Price the onshore transfer taxes, then re-derive x1 and x2 from the grossed-up cheque. <span class="ref">F10</span></span></li>
-      <li><span>Paper the NLPF → NLPI route, and confirm the two vehicles' LP bases align. <span class="ref">F8</span></span></li>
+      <li><span>Class A's $0.70M share of the remaining ROC is not funded by the $35M — gross the cheque up, or pay it ahead of the tail.</span></li>
+      <li><span>Price the onshore transfer taxes and confirm the discount survives the pricing floor; the gross-up moves x2.</span></li>
+      <li><span>Paper the NLPF → NLPI route and confirm the two vehicles' LP bases align — it carries $30.59M of the $35M.</span></li>
+      <li><span>Schedule 1: per portco, SB2's holding, carrying value, and NLPI's 12.6% slice, summing to $31.5M.</span></li>
+      <li><span>Schedule 2: the consents each portco's SHA amendment needs — ROFR, tag, drag, lock-ups.</span></li>
+      <li><span>Recompute 14.1 / 12.6 / 1.4 and the §4 ratios from the final cheque and NAV at signing.</span></li>
     </ol>
-    <p class="body mono" data-step="2" style="font-size:0.8rem">Every figure in this deck is computed from
-      the document's own primitives, not quoted — the waterfall is reimplemented in deal_agent/ and
-      reproduces the worked exits to the cent.</p>
+    <p class="body mono" data-step="2" style="font-size:0.8rem">Every figure in this deck is computed
+      from the fund's own primitives, not quoted — the waterfall is reimplemented in deal_agent/, and
+      57 tests pin these numbers.</p>
   </section>
 
 </main>
