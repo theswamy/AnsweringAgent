@@ -68,10 +68,16 @@ vehicles:
 
 | Vehicle | Cheque | What it acquires | Economics acquired | Worth at NAV | Discount |
 |---|---|---|---|---|---|
-| **NLPF** — Singapore feeder | $3.5M (10%) | new **Class B2** units in SB2 Mauritius | 1.4% | $5.04M | 30.6% |
-| **NLPI** — India fund | $31.5M (90%) | shares in the portcos, directly | 12.6% | $45.36M | 30.6% |
+| **NLPF** — Singapore feeder | $3.5M (10%) | new **Class B2** units in SB2 Mauritius | **x1 = 1.4%** | $5.04M | 30.6% |
+| **NLPI** — India fund | $31.5M (90%) | shares in the portcos, directly | **x2 = 12.6%** | $45.36M | 30.6% |
 
-Both vehicles are priced identically per unit of economics, and 1.4% + 12.6% = NLP's 14%.
+**x1** and **x2** are the two vehicles' shares of the fund's total economics, and are used
+with those names throughout. Both vehicles are priced identically per unit of economics —
+the 10 / 90 split of the cheque buys a 10 / 90 split of NLP's interest.
+
+x1 + x2 = 14.0%, against the 14.1% used for NLP in §4. The difference is rounding at one
+decimal, and both are recomputed at signing (§11 item 6).
+
 NLPF's money is **primary** capital into the fund; NLPI's is a **secondary** purchase of
 assets from it.
 
@@ -191,8 +197,9 @@ at $500M (5% of the company), in tranches of $15M and $10M.
    Singapore especially, where it is how NLPI holds its 12.6% rather than a convenience.
 5. **Schedule 1** — per portco: domicile, SB2's holding, carrying value, and NLPI's 12.6%
    slice in shares and dollars, summing to $31.5M.
-6. **Precision.** 14.1%, 12.6% and 1.4% are illustrative to one decimal. Recompute all of
-   them, and the ratios in §4, from the final cheque and NAV at signing.
+6. **Precision.** x1, x2 and NLP's 14.1% are illustrative to one decimal, and x1 + x2 does
+   not currently equal 14.1% for that reason. Recompute all of them, and the ratios in §4,
+   from the final cheque and NAV at signing.
 7. **"mg"** in the portco list is not expanded anywhere.
 
 ## 12. Changelog against the previous version
