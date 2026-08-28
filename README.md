@@ -180,6 +180,11 @@ With `ANTHROPIC_API_KEY` set it runs Claude with those tools. Without one it fal
 back to a deterministic keyword answerer over the same model, and says so — so the
 CLI and the tests work offline.
 
+[`docs/TERM_SHEET_V2.md`](docs/TERM_SHEET_V2.md) is a rewritten version of the
+transaction document itself: same economics, with the inconsistent arithmetic fixed and
+the liquidation preference expressed as an aggregate entitlement rather than a multiple.
+Every figure in it is checked against the model by `deal_agent/tests/test_waterfall_v2.py`.
+
 What the analysis found is written up in [`docs/DEAL_ANALYSIS.md`](docs/DEAL_ANALYSIS.md),
 and [`docs/presentation/sb2-nlp-flow.html`](docs/presentation/sb2-nlp-flow.html) is a
 14-slide walkthrough of the flow for people who need the logic rather than the register
@@ -191,7 +196,7 @@ pref, since the pref plus NLPI's own sales must add to 10x of the feeder's $3.5M
 12.6% transfers $3.85M to NLP from Class A and the old LPs.
 
 ```bash
-python -m unittest discover -s deal_agent/tests -t .          # 45 tests, no deps
+python -m unittest discover -s deal_agent/tests -t .          # 57 tests, no deps
 ```
 
 ---
