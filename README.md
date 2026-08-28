@@ -189,9 +189,8 @@ What the analysis found is written up in [`docs/DEAL_ANALYSIS.md`](docs/DEAL_ANA
 and [`docs/presentation/sb2-nlp-flow.html`](docs/presentation/sb2-nlp-flow.html) is a
 14-slide walkthrough of the flow for people who need the logic rather than the register
 (open it in a browser; arrow keys advance it).
-[`docs/presentation/sb2-nlp-onepager.html`](docs/presentation/sb2-nlp-onepager.html) is the
-concept on one page, without the arithmetic — what each side gets, the two phases, and what
-is still open.
+[`docs/presentation/sb2-nlp-onepager.html`](docs/presentation/sb2-nlp-onepager.html) is a
+one-page summary of terms — the figures without the derivations.
 The headline: the document's own arithmetic is sound, but two consecutive tranches of
 the same Niyo secondary sell 1.4% and 12% pro-rata to NLPI. That percentage also sizes the
 pref, since the pref plus NLPI's own sales must add to 10x of the feeder's $3.5M — 9.86x +

@@ -1,7 +1,7 @@
-<title>The SB2 / NLP Trade</title>
+<title>SB2 / NLP Summary of Terms</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 
 <style>
   :root {
@@ -13,25 +13,16 @@
     --ink-soft:   #3a4a50;
     --muted:      #5f7278;
     --accent:     #0d6068;
-    --accent-dim: #dceceb;
-    --copper:     #96501f;
-    --gp-fill:    #0d6068;
-    --lp-fill:    #7fa6a6;
-    --nlp-fill:   #96501f;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --paper: #0b1214; --card: #121a1d; --rule: #263539; --rule-soft: #1a2427;
       --ink: #e4eaea; --ink-soft: #bdcacd; --muted: #8a9da3; --accent: #5ecacd;
-      --accent-dim: #10292b; --copper: #d8955f;
-      --gp-fill: #5ecacd; --lp-fill: #40636a; --nlp-fill: #d8955f;
     }
   }
   :root[data-theme="dark"] {
     --paper: #0b1214; --card: #121a1d; --rule: #263539; --rule-soft: #1a2427;
     --ink: #e4eaea; --ink-soft: #bdcacd; --muted: #8a9da3; --accent: #5ecacd;
-    --accent-dim: #10292b; --copper: #d8955f;
-    --gp-fill: #5ecacd; --lp-fill: #40636a; --nlp-fill: #d8955f;
   }
 
   * { box-sizing: border-box; }
@@ -42,209 +33,141 @@
     color: var(--ink);
     font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
     font-size: 15.5px;
-    line-height: 1.58;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
   }
 
   .sheet {
-    max-width: 840px;
+    max-width: 780px;
     margin: 0 auto;
-    padding: clamp(2rem, 5vw, 3.5rem) clamp(1.25rem, 4vw, 2.5rem) 4rem;
+    padding: clamp(2rem, 5vw, 3.25rem) clamp(1.25rem, 4vw, 2.25rem) 4rem;
     display: grid;
-    row-gap: 1.9rem;
+    row-gap: 1.75rem;
   }
 
-  header { display: grid; row-gap: 0.7rem; }
-  .eyebrow {
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
-    font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase;
-    color: var(--accent); margin: 0;
-  }
+  header { display: grid; row-gap: 0.4rem; }
   h1 {
     font-family: Spectral, Georgia, serif; font-weight: 600;
-    font-size: clamp(1.9rem, 4.6vw, 2.6rem); line-height: 1.08;
-    letter-spacing: -0.018em; margin: 0; text-wrap: balance;
+    font-size: clamp(1.6rem, 3.6vw, 2.1rem); line-height: 1.12;
+    letter-spacing: -0.015em; margin: 0;
   }
-  .standfirst {
-    font-family: Spectral, Georgia, serif; font-size: clamp(1.02rem, 2vw, 1.2rem);
-    line-height: 1.5; color: var(--ink-soft); margin: 0; max-width: 62ch;
+  .sub {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); margin: 0;
   }
 
-  section { display: grid; row-gap: 0.7rem; }
+  section { display: grid; row-gap: 0.55rem; }
   h2 {
     font-family: "IBM Plex Mono", ui-monospace, monospace;
     font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--muted); font-weight: 500; margin: 0;
-    padding-bottom: 0.45rem; border-bottom: 1px solid var(--rule);
+    color: var(--accent); font-weight: 500; margin: 0;
+    padding-bottom: 0.4rem; border-bottom: 1px solid var(--rule);
   }
-  p { margin: 0; max-width: 74ch; }
-  strong { font-weight: 600; }
-  em { font-style: italic; }
-  .soft { color: var(--ink-soft); }
 
-  /* what each side gets */
-  .parties { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 0.8rem; }
-  .party {
-    background: var(--card); border: 1px solid var(--rule);
-    border-top: 3px solid var(--who, var(--rule)); border-radius: 4px;
-    padding: 0.9rem 1rem; display: grid; row-gap: 0.4rem;
+  dl { margin: 0; display: grid; grid-template-columns: minmax(11rem, 15rem) 1fr; }
+  dt, dd {
+    margin: 0; padding: 0.42rem 0;
+    border-bottom: 1px solid var(--rule-soft);
   }
-  .party h3 {
-    margin: 0; font-size: 0.95rem; font-weight: 600; letter-spacing: -0.005em;
-  }
-  .party .gets, .party .gives { font-size: 0.88rem; line-height: 1.45; }
-  .party .gets { color: var(--ink); }
-  .party .gives { color: var(--muted); }
-  .party .tag {
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
-    font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--muted);
-  }
-  .party.lp  { --who: var(--lp-fill); }
-  .party.gp  { --who: var(--gp-fill); }
-  .party.nlp { --who: var(--nlp-fill); }
+  dt { color: var(--ink-soft); padding-right: 1rem; }
+  dd { font-variant-numeric: tabular-nums; }
+  dl.last dt:last-of-type, dl.last dd:last-of-type { border-bottom: none; }
 
-  /* the two phases */
-  .phases { display: grid; row-gap: 0.9rem; }
-  .phase { display: grid; row-gap: 0.35rem; }
-  .phase-label {
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
-    font-size: 0.68rem; letter-spacing: 0.09em; text-transform: uppercase;
-    color: var(--muted);
-  }
-  .bar { display: flex; height: 2.7rem; border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; }
-  .seg {
-    display: grid; align-content: center; padding: 0 0.65rem;
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
-    font-size: 0.78rem; font-weight: 500; color: var(--paper);
-    white-space: nowrap; overflow: hidden;
-  }
-  .seg span { font-size: 0.6rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.88; font-weight: 400; }
-  .seg.gp { background: var(--gp-fill); }
-  .seg.lp { background: var(--lp-fill); }
-  .seg.nlp { background: var(--nlp-fill); }
+  ol { margin: 0; padding-left: 1.35rem; display: grid; row-gap: 0.35rem; }
+  ol li { padding-left: 0.2rem; }
 
-  ul { margin: 0; padding-left: 1.15rem; display: grid; row-gap: 0.4rem; }
-  li { max-width: 74ch; }
-  li strong { font-weight: 600; }
-
-  .open { display: grid; row-gap: 0.55rem; }
-  .open-item { display: grid; grid-template-columns: auto 1fr; gap: 0.7rem; align-items: baseline; }
-  .open-item .n {
-    font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.72rem;
-    color: var(--copper); border-bottom: 1px solid var(--copper); min-width: 1.3rem; text-align: center;
-  }
-  .open-item p { font-size: 0.94rem; }
+  p { margin: 0; max-width: 76ch; }
 
   footer {
-    border-top: 1px solid var(--rule); padding-top: 0.9rem;
-    font-size: 0.84rem; color: var(--muted); max-width: 74ch;
+    border-top: 1px solid var(--rule); padding-top: 0.85rem;
+    font-size: 0.85rem; color: var(--muted); max-width: 76ch;
   }
-  a { color: var(--accent); }
+
+  @media (max-width: 620px) {
+    dl { grid-template-columns: 1fr; }
+    dt { padding-bottom: 0; border-bottom: none; font-size: 0.82rem; }
+    dd { padding-top: 0.1rem; }
+  }
 </style>
 
 <div class="sheet">
 
   <header>
-    <p class="eyebrow">One page · SB2 secondary · August 2026</p>
-    <h1>The LPs get their capital back today, and pay for it with upside</h1>
-    <p class="standfirst">A new investor, NLP, puts $35M into the fund. That money returns the
-      capital the LPs are still owed — completing 1x now rather than whenever the portfolio
-      sells. In exchange NLP takes about a seventh of all future profit, bought at a discount,
-      and is repaid before anyone else.</p>
+    <h1>SB2 / NLP secondary</h1>
+    <p class="sub">Summary of terms · August 2026</p>
   </header>
 
   <section>
-    <h2>Where the fund stands</h2>
-    <p class="soft">$11M has been distributed and <strong>$35M of LP capital is still
-      outstanding</strong>, against a portfolio carried at <strong>$360M</strong>. So the value is
-      there on paper; what the LPs do not have is cash, and nobody controls when the companies
-      actually sell.</p>
+    <h2>The fund</h2>
+    <dl>
+      <dt>Fund size</dt><dd>$45.612M</dd>
+      <dt>Class A · GP</dt><dd>2% · $0.912M</dd>
+      <dt>Class B · LP</dt><dd>98% · $44.700M</dd>
+      <dt>Distributed to date</dt><dd>$11.0M</dd>
+      <dt>Return of capital outstanding</dt><dd>$35.0M</dd>
+      <dt>Portfolio carrying value</dt><dd>$360M</dd>
+      <dt>Carry, above returned capital</dt><dd>30%</dd>
+    </dl>
   </section>
 
   <section>
-    <h2>What each side is doing</h2>
-    <div class="parties">
-      <div class="party lp">
-        <span class="tag">selling</span>
-        <h3>The existing LPs</h3>
-        <p class="gets">Get their remaining capital back now, in cash and certain.</p>
-        <p class="gives">Give up roughly a seventh of the portfolio's future profit.</p>
-      </div>
-      <div class="party gp">
-        <span class="tag">unchanged</span>
-        <h3>The GP</h3>
-        <p class="gets">Keeps its full economics — its share and its carry are untouched.</p>
-        <p class="gives">The slice sold comes entirely out of the LPs' side, not the GP's.</p>
-      </div>
-      <div class="party nlp">
-        <span class="tag">buying</span>
-        <h3>NLP</h3>
-        <p class="gets">A discounted share of a marked-up portfolio, with its $35M repaid first.</p>
-        <p class="gives">$35M today, and it waits for exits like everyone else.</p>
-      </div>
-    </div>
+    <h2>The transaction</h2>
+    <dl>
+      <dt>Amount</dt><dd>$35M</dd>
+      <dt>What is acquired</dt><dd>Class B economics, at a 35% discount to LP NAV</dd>
+      <dt>Priority return</dt><dd>the first $35M of distributions, to NLP</dd>
+      <dt>Thereafter</dt><dd>14.1% of all distributions, to NLP</dd>
+      <dt>Source of the interest sold</dt><dd>Class B; Class A's economics are unchanged</dd>
+    </dl>
   </section>
 
   <section>
-    <h2>How money comes back, in two phases</h2>
-    <div class="phases">
-      <div class="phase">
-        <span class="phase-label">Phase 1 · until NLP has its $35M back</span>
-        <div class="bar">
-          <div class="seg nlp" style="width:100%">100%<span>to NLP</span></div>
-        </div>
-      </div>
-      <div class="phase">
-        <span class="phase-label">Phase 2 · every dollar after that, for the life of the fund</span>
-        <div class="bar">
-          <div class="seg gp" style="width:31.4%">31%<span>GP</span></div>
-          <div class="seg lp" style="width:54.5%">55%<span>Existing LPs</span></div>
-          <div class="seg nlp" style="width:14.1%">14%<span>NLP</span></div>
-        </div>
-      </div>
-    </div>
-    <p class="soft">The two phases meet exactly: NLP is whole at the moment the fund has
-      distributed $35M, and takes nothing extra on the way. That is the whole economic design —
-      first money back, then pari passu.</p>
+    <h2>Distributions above NLP's priority return</h2>
+    <dl>
+      <dt>Class A · GP</dt><dd>31.4%</dd>
+      <dt>Class B1 · existing LPs</dt><dd>54.5%</dd>
+      <dt>NLP</dt><dd>14.1%</dd>
+    </dl>
   </section>
 
   <section>
-    <h2>Why the paperwork looks complicated</h2>
-    <p class="soft">Only a tenth of NLP's cheque can move offshore-to-offshore into the fund. The
-      other 90% has to come onshore in India and buy shares in the companies directly. So NLP ends
-      up holding <strong>two positions</strong> — a small interest in the fund, and a direct stake
-      in each portfolio company — and where it cannot hold shares directly, a put/call written into
-      the company's shareholder agreement gives it the same economics.</p>
-    <p class="soft">Everything else in the term sheet is bookkeeping to make those two positions
-      behave as one investor: <em>NLP gets its $35M, then its 14%, no matter which route the money
-      travels.</em></p>
+    <h2>How NLP invests</h2>
+    <dl>
+      <dt>NLPF · Singapore feeder</dt><dd>$3.5M (10%) for Class B2 units in SB2, Mauritius, carrying a liquidation preference</dd>
+      <dt>NLPI · India fund</dt><dd>$31.5M (90%) for 12.6% of SB2's stake in each portfolio company</dd>
+      <dt>India-domiciled companies</dt><dd>NLPI holds the shares directly</dd>
+      <dt>Delaware and Singapore</dt><dd>NLPI's 12.6% is held through a put/call in the company's shareholder agreement</dd>
+    </dl>
   </section>
 
   <section>
-    <h2>What still needs deciding</h2>
-    <div class="open">
-      <div class="open-item"><span class="n">1</span><p><strong>The put/call at each company.</strong>
-        It is how NLP's India vehicle participates where it cannot hold shares — so its
-        enforceability matters more than it looks, and each company's other shareholders have to
-        consent.</p></div>
-      <div class="open-item"><span class="n">2</span><p><strong>Getting money from the offshore
-        vehicle to the onshore one.</strong> Both are NLP, so it is an internal transfer — but most
-        of the repayment lands offshore, and the route and its tax treatment have to be papered
-        rather than assumed.</p></div>
-      <div class="open-item"><span class="n">3</span><p><strong>Who bears the tax on the onshore
-        purchase.</strong> Currently assumed to be grossed up. That assumption moves the size of
-        NLP's stake, and therefore every split.</p></div>
-      <div class="open-item"><span class="n">4</span><p><strong>The GP's own unreturned
-        capital.</strong> A small amount, and the $35M as structured does not fund it. Either the
-        cheque is grossed up or the GP is paid ahead of Phase 2.</p></div>
-    </div>
+    <h2>At each exit</h2>
+    <ol>
+      <li>The buyer pays 12.6% of the proceeds to NLPI and 87.4% to SB2.</li>
+      <li>SB2's receipts pay the NLPF liquidation preference until $30.59M has been paid.</li>
+      <li>Thereafter SB2's receipts are distributed: Class A 35.93%, Class B1 62.36%, Class B2 1.72%.</li>
+      <li>SB2 and NLP sell pro-rata, whether the exit is a secondary, an IPO, or post-IPO.</li>
+    </ol>
+    <p>Steps 1 and 2 together return NLP $35M, at which point step 3 begins. In absolute terms
+      step 3 is the 31.4 / 54.5 / 14.1 split above.</p>
+  </section>
+
+  <section>
+    <h2>Not yet settled</h2>
+    <ol>
+      <li>The put/call amendments at each company, and the consents they require.</li>
+      <li>The route and tax treatment of payments from NLPF to NLPI.</li>
+      <li>Tax on the onshore purchase, currently assumed to be grossed up.</li>
+      <li>Class A's $0.70M share of the outstanding return of capital, which the $35M does not fund.</li>
+      <li>The final values of x1 and x2, and the percentages derived from them.</li>
+    </ol>
   </section>
 
   <footer>
-    Percentages are rounded and illustrative — they are recomputed from the final cheque and NAV
-    at signing. The derivations, worked exits and full open-items list are in
-    <em>Principles of the Transaction (v2)</em>.
+    Percentages are stated to one decimal and are illustrative; they are recomputed from the final
+    cheque and NAV at signing. Derivations and worked exits are in <em>Principles of the
+    Transaction (v2)</em>.
   </footer>
 
 </div>
