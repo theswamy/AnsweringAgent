@@ -120,7 +120,7 @@ def run_waterfall(
     """
     econ = econ or derive(terms)
     direct_pct = (
-        terms.x2_portco if convention is SplitConvention.STRUCTURE else terms.x1_class_b
+        econ.tail_nlp_direct if convention is SplitConvention.STRUCTURE else terms.x1_class_b
     )
 
     outstanding = terms.feeder_liqpref if liqpref is None else liqpref
@@ -158,9 +158,10 @@ def run_waterfall(
     return result
 
 
-#: The preference consistent with NLPI taking x2 = 12.6% of every cheque:
-#: 87.4% x $35M, i.e. 8.74x on NLPF's $3.5M. See `terms.pref_consistency`.
-PREF_AT_X2: float = 30.59
+#: The preference consistent with NLPI taking x2 of every cheque, on the
+#: operative basis (35% off fund NAV): 86.54% x $35M, i.e. 8.65x on NLPF's
+#: $3.5M. See `terms.pref_consistency`.
+PREF_AT_X2: float = (1 - derive(DealTerms()).tail_nlp_direct) * DealTerms().check
 
 #: The two exits the document works through [S7][S8][S9][S10].
 DOCUMENT_EXITS: list[ExitEvent] = [

@@ -29,6 +29,12 @@ class DealTerms:
     # --- NLP's purchase [S3][S5] ---
     check: float = 35.0
     discount: float = 0.35
+    #: What the discount is measured against. "lp_nav" is the operative basis:
+    #: the LP's own share of NAV, which is what the LPs are selling and what
+    #: [S3] used. "nav" measures against the fund's whole $360M carrying value,
+    #: a larger denominator that buys NLP more; "stated" pins NLP's share to the
+    #: 14.1% the document quotes, which is this basis rounded.
+    discount_basis: str = "lp_nav"
     feeder_share_of_check: float = 0.10  # NLPF's slice of the $35M
     feeder_liqpref_multiple: float = 9.86
     x1_class_b: float = 0.014  # "(x1=1.4%) of the Class B" bought by NLPF
@@ -108,6 +114,17 @@ class Economics:
     nlp_pct_of_lp_undiscounted: float
     nlp_pct_of_lp_discounted: float
     nlp_derived_profit_share: float
+    #: NLP's share of profit implied by a `discount` off fund NAV.
+    nlp_share_at_nav_discount: float
+    #: NLP's share of profit implied by the same discount off LP NAV - the
+    #: document's basis in [S3].
+    nlp_share_at_lp_nav_discount: float
+    #: The discount to LP NAV that the operative share represents - 35% on the
+    #: operative basis, by construction.
+    effective_discount_to_lp_nav: float
+    #: The discount to fund NAV that the operative share represents. Stated
+    #: for contrast only - the LPs sell against their own NAV, not the fund's.
+    effective_discount_to_nav: float
 
     # Operative post-transaction sharing ratios (fractions of every $1 of
     # distribution once NLP's first $35M is repaid)
@@ -141,8 +158,13 @@ def derive(terms: DealTerms = DealTerms()) -> Economics:
       That is why the document can quote fixed ratios instead of a tiered
       waterfall without changing anyone's economics.
     * The secondary is sold out of Class B, so Class A is not diluted: Class A
-      keeps 31.4% of every absolute dollar, and NLP's 14.1% comes entirely out
-      of Class B's 68.6%.
+      keeps 31.40% of every absolute dollar, and NLP's share comes entirely out
+      of Class B's 68.60%.
+    * NLP's share follows from the price and the basis the discount is measured
+      against. The operative basis is the LP's own share of NAV ($257.25M),
+      since that is what the LPs are selling and the GP is untouched: 35% off it
+      puts NLP at 14.36% of profit. Measured against the fund's whole $360M NAV
+      the same 35% would be 14.96%. `DealTerms.discount_basis` selects.
     """
     a = terms.class_a_share_of_commitments
     profit = terms.nav - terms.remaining_roc
@@ -158,18 +180,26 @@ def derive(terms: DealTerms = DealTerms()) -> Economics:
 
     undiscounted = terms.check / lp_nav
     discounted = undiscounted / (1 - terms.discount)
-
-    # The document's stated 14.1% is the operative term; the derived figure is
-    # kept alongside it so the gap is visible rather than silently smoothed.
     nlp_derived_profit_share = discounted * class_b_profit_share
 
-    tail_nlp = terms.stated_tail_nlp
-    tail_class_a = terms.stated_tail_class_a
-    tail_class_b1 = 1.0 - tail_class_a - tail_nlp
+    # The discount can be measured against either NAV; they are different
+    # denominators and give different answers, so the basis is a term of the
+    # deal rather than a rounding choice.
+    at_nav = terms.check / ((1 - terms.discount) * terms.nav)
+    at_lp_nav = nlp_derived_profit_share
+    tail_nlp = {
+        "nav": at_nav,
+        "lp_nav": at_lp_nav,
+        "stated": terms.stated_tail_nlp,
+    }[terms.discount_basis]
 
-    # NLPI's direct portco stake is fixed by the structure at x2; whatever is
-    # left of NLP's entitlement has to arrive through the feeder's Class B2.
-    tail_nlp_direct = terms.x2_portco
+    tail_class_a = class_a_profit_share
+    # The secondary is sold out of Class B, so all of NLP's share comes from it.
+    tail_class_b1 = class_b_profit_share - tail_nlp
+
+    # NLP's share splits between its two vehicles pro rata to the two cheques:
+    # NLPI holds x2 directly, NLPF holds x1 inside the fund.
+    tail_nlp_direct = (1 - terms.feeder_share_of_check) * tail_nlp
     tail_nlp_feeder = tail_nlp - tail_nlp_direct
 
     sb2_share = 1.0 - tail_nlp_direct
@@ -183,6 +213,12 @@ def derive(terms: DealTerms = DealTerms()) -> Economics:
         nlp_pct_of_lp_undiscounted=undiscounted,
         nlp_pct_of_lp_discounted=discounted,
         nlp_derived_profit_share=nlp_derived_profit_share,
+        nlp_share_at_nav_discount=at_nav,
+        nlp_share_at_lp_nav_discount=at_lp_nav,
+        effective_discount_to_lp_nav=1 - terms.check / (
+            (tail_nlp / class_b_profit_share) * lp_nav
+        ),
+        effective_discount_to_nav=1 - terms.check / (tail_nlp * terms.nav),
         tail_class_a=tail_class_a,
         tail_class_b1=tail_class_b1,
         tail_nlp_total=tail_nlp,
@@ -267,7 +303,7 @@ def routing_model(
     """
     if not 0 < offshore_fraction < 1:
         raise ValueError("offshore_fraction must be in (0, 1)")
-    total = terms.stated_tail_nlp
+    total = derive(terms).tail_nlp_total
     adjusted = replace(
         terms,
         feeder_share_of_check=offshore_fraction,
@@ -275,7 +311,7 @@ def routing_model(
         x2_portco=(1 - offshore_fraction) * total,
     )
     econ = derive(adjusted)
-    preference = (1 - adjusted.x2_portco) * adjusted.check
+    preference = (1 - econ.tail_nlp_direct) * adjusted.check
     return adjusted, econ, preference
 
 

@@ -69,7 +69,43 @@ class TestCapTable(unittest.TestCase):
         self.assertAlmostEqual(
             ECON.tail_class_a + ECON.tail_class_b1 + ECON.tail_nlp_total, 1.0, places=9
         )
-        self.assertAlmostEqual(ECON.tail_class_b1, 0.545, places=3)
+        # On the operative basis - 35% off the LP's share of NAV.
+        self.assertAlmostEqual(ECON.tail_nlp_total, 0.1436, places=4)
+        self.assertAlmostEqual(ECON.tail_class_b1, 0.5424, places=4)
+
+    def test_the_discount_basis_sets_nlps_share(self):
+        """The same 35% against a different NAV is a different number, so the
+        basis is a term rather than a rounding choice."""
+        from dataclasses import replace
+
+        shares = {}
+        for basis in ("nav", "lp_nav", "stated"):
+            econ = derive(replace(TERMS, discount_basis=basis))
+            shares[basis] = econ.tail_nlp_total
+            # Class A is never diluted, and the three always close to 100%.
+            self.assertAlmostEqual(econ.tail_class_a, ECON.class_a_profit_share, places=9)
+            self.assertAlmostEqual(
+                econ.tail_class_a + econ.tail_class_b1 + econ.tail_nlp_total, 1.0, places=9
+            )
+        self.assertAlmostEqual(shares["lp_nav"], 0.1436, places=4)  # operative
+        self.assertAlmostEqual(shares["nav"], 0.1496, places=4)
+        self.assertAlmostEqual(shares["stated"], 0.141, places=4)
+        # The whole difference between the bases lands on Class B1.
+        b1 = {b: derive(replace(TERMS, discount_basis=b)).tail_class_b1
+              for b in ("lp_nav", "nav")}
+        self.assertAlmostEqual(b1["lp_nav"] - b1["nav"], 0.0060, places=4)
+
+    def test_the_operative_basis_is_35_pct_off_the_lps_own_nav(self):
+        """By construction - and 32.3% against the fund's NAV, a larger pool."""
+        self.assertAlmostEqual(ECON.effective_discount_to_lp_nav, 0.35, places=9)
+        self.assertAlmostEqual(ECON.effective_discount_to_nav, 0.3229, places=4)
+
+    def test_the_documents_14_1_pct_is_this_basis_rounded(self):
+        """14.36% to two decimals; the document quotes 14.1%."""
+        self.assertAlmostEqual(ECON.tail_nlp_total, TERMS.stated_tail_nlp, delta=0.003)
+        self.assertAlmostEqual(
+            ECON.nlp_share_at_lp_nav_discount, ECON.tail_nlp_total, places=9
+        )
 
     def test_class_a_is_not_diluted_by_the_secondary(self):
         self.assertAlmostEqual(ECON.tail_class_a, ECON.class_a_profit_share, places=4)
@@ -77,15 +113,23 @@ class TestCapTable(unittest.TestCase):
             ECON.tail_class_b1 + ECON.tail_nlp_total, ECON.class_b_profit_share, places=4
         )
 
-    def test_sb2_internal_shares_match_the_document(self):
-        """[S10] - 35.3% / 62.5% / 2.27% of SB2's receipts."""
-        self.assertAlmostEqual(ECON.sb2_share_class_a, 0.353, delta=0.007)
-        self.assertAlmostEqual(ECON.sb2_share_class_b1, 0.625, delta=0.002)
-        self.assertAlmostEqual(ECON.sb2_share_class_b2, 0.0227, delta=0.006)
+    def test_sb2_internal_shares_are_the_absolute_ones_grossed_up(self):
+        """The fund only receives what NLPI has not taken, so its own split is
+        each party's absolute share over SB2's share of the cheque. [S10] quotes
+        35.3 / 62.5 / 2.27 on its own (different) figures."""
+        self.assertAlmostEqual(ECON.sb2_share_class_a, 0.3606, places=4)
+        self.assertAlmostEqual(ECON.sb2_share_class_b1, 0.6229, places=4)
+        self.assertAlmostEqual(ECON.sb2_share_class_b2, 0.0165, places=4)
+        self.assertAlmostEqual(
+            ECON.sb2_share_class_a + ECON.sb2_share_class_b1 + ECON.sb2_share_class_b2,
+            1.0,
+            places=9,
+        )
 
-    def test_88_12_split_of_the_buyers_cheque(self):
-        """[S10] - 88% to SB2, 12% to NLPI, against x2 = 12.6%."""
-        self.assertAlmostEqual(ECON.sb2_share_of_proceeds, 0.874, places=4)
+    def test_the_cheque_splits_on_x2(self):
+        """NLPI takes x2 of every cheque; SB2 receives the balance."""
+        self.assertAlmostEqual(ECON.tail_nlp_direct, 0.12923, places=5)
+        self.assertAlmostEqual(ECON.sb2_share_of_proceeds, 0.87077, places=5)
 
 
 class TestLiqPref(unittest.TestCase):
@@ -129,13 +173,19 @@ class TestLiqPref(unittest.TestCase):
         """F2/F14 - the 9.86x sizing assumes a 1.4% onshore slice."""
         result = run_waterfall(DOCUMENT_EXITS[:2])
         self.assertFalse(result.pref_satisfied)
-        self.assertAlmostEqual(result.pref_outstanding, 3.92, places=2)
+        # $34.51M of pref against SB2 receiving only (1 - x2) of the $35M
+        self.assertAlmostEqual(
+            result.pref_outstanding,
+            TERMS.feeder_liqpref - (1 - ECON.tail_nlp_direct) * TERMS.check,
+            places=6,
+        )
+        self.assertAlmostEqual(result.pref_outstanding, 4.03, places=2)
         # NLP is still repaid exactly its 1x at $35M of exits - it is the pref
         # running past that point, not the repayment, that costs the other classes.
         self.assertAlmostEqual(result.totals["nlp_total"], TERMS.check, places=6)
 
     def test_pref_multiple_is_a_function_of_the_onshore_slice(self):
-        """The stated 9.86x is what nets off x1; 8.74x is what nets off x2.
+        """The stated 9.86x is what nets off x1; 8.71x is what nets off x2.
 
         Only a portco-level slice reaches NLP without passing through SB2, so
         x2 is the basis the principle requires - x1 is a fund-level interest and
@@ -158,8 +208,11 @@ class TestLiqPref(unittest.TestCase):
         self.assertEqual(during.class_b2_nlpf, 0.0)
         self.assertEqual(during.class_a, 0.0)
 
-    def test_an_8_74x_pref_clears_exactly_at_x2(self):
-        result = run_waterfall(DOCUMENT_EXITS[:2], liqpref=30.59)
+    def test_a_pref_sized_off_x2_clears_exactly(self):
+        """Whatever x2 is, the pref that clears exactly is (1 - x2) x $35M."""
+        pref = (1 - ECON.tail_nlp_direct) * TERMS.check
+        self.assertAlmostEqual(pref, 30.48, places=2)
+        result = run_waterfall(DOCUMENT_EXITS[:2], liqpref=pref)
         self.assertTrue(result.pref_satisfied)
         self.assertAlmostEqual(result.totals["nlp_total"], TERMS.check, places=6)
 
@@ -178,7 +231,8 @@ class TestLiqPref(unittest.TestCase):
         happens entirely after the pref is repaid. A tranche that straddles the
         pref is split, which is the mechanical half of finding F3.
         """
-        result = run_waterfall([ExitEvent("Freo", 45.0), ExitEvent("KredX", 100.0)])
+        result = run_waterfall([ExitEvent("Freo", 45.0), ExitEvent("KredX", 100.0)],
+                               liqpref=(1 - ECON.tail_nlp_direct) * TERMS.check)
         self.assertTrue(result.pref_satisfied)
 
         steady = result.events[1]
@@ -189,8 +243,11 @@ class TestLiqPref(unittest.TestCase):
     def test_a_straddling_tranche_is_split_not_shared_pro_rata(self):
         """The transition exit pays the pref first, so Class A's slice of it is
         below 31.4% - the document's tail table cannot be applied to it."""
-        dist = run_waterfall([ExitEvent("Freo", 435.0)]).events[0]
-        self.assertLess(dist.class_a / (435.0 - TERMS.check), ECON.tail_class_a)
+        pref = (1 - ECON.tail_nlp_direct) * TERMS.check
+        dist = run_waterfall([ExitEvent("Freo", 435.0)], liqpref=pref).events[0]
+        # Class A's slice of everything above the priority is below its 31.4%,
+        # because the pref took the first bite out of SB2's receipts.
+        self.assertLess(dist.class_a / (435.0 - pref), ECON.tail_class_a)
 
 
 class TestSplitConventions(unittest.TestCase):
@@ -199,19 +256,24 @@ class TestSplitConventions(unittest.TestCase):
         self.assertAlmostEqual(0.025 * TERMS.x2_portco, 0.00315, places=6)
         self.assertAlmostEqual(0.025 * TERMS.x1_class_b, 0.00035, places=6)
 
-    def test_convention_moves_2_24m_on_the_20m_exit(self):
+    def test_the_convention_moves_millions_on_one_exit(self):
         structure = run_waterfall(DOCUMENT_EXITS[:1]).events[0]
         as_written = run_waterfall(
             DOCUMENT_EXITS[:1], convention=SplitConvention.DOC_EXAMPLES
         ).events[0]
-        self.assertAlmostEqual(structure.nlpi_direct - as_written.nlpi_direct, 2.24, places=2)
+        self.assertAlmostEqual(
+            structure.nlpi_direct - as_written.nlpi_direct,
+            20.0 * (ECON.tail_nlp_direct - TERMS.x1_class_b),
+            places=6,
+        )
+        self.assertGreater(structure.nlpi_direct - as_written.nlpi_direct, 2.0)
 
     def test_x1_denominators_disagree(self):
-        """F4 - 1.4% of Class B is 0.96% of absolute; the tail needs ~1.5%."""
+        """F4 - 1.4% of Class B is 0.96% of absolute; the feeder needs ~1.44%."""
         self.assertAlmostEqual(
             TERMS.x1_class_b * ECON.class_b_profit_share, 0.0096, places=4
         )
-        self.assertAlmostEqual(ECON.tail_nlp_feeder, 0.015, places=4)
+        self.assertAlmostEqual(ECON.tail_nlp_feeder, 0.0144, places=4)
 
 
 class TestOutcomes(unittest.TestCase):
@@ -220,16 +282,16 @@ class TestOutcomes(unittest.TestCase):
         self.assertLess(nlp_returns(20.0)["moic"], 1.0)
 
     def test_nlp_makes_2_3x_at_the_carrying_value(self):
-        self.assertAlmostEqual(nlp_returns(360.0)["moic"], 2.31, places=2)
+        self.assertAlmostEqual(nlp_returns(360.0)["moic"], 2.33, places=2)
 
-    def test_old_lps_give_up_about_45m_at_the_carrying_value(self):
+    def test_old_lps_give_up_about_46m_at_the_carrying_value(self):
         trade = old_lp_tradeoff(360.0)
-        self.assertAlmostEqual(trade["difference"], -45.1, delta=0.1)
+        self.assertAlmostEqual(trade["difference"], -46.0, delta=0.1)
 
     def test_old_lps_indifference_point_is_low(self):
         """F13 - about $40M of total future proceeds against a $360M carrying value."""
         trade = old_lp_tradeoff(360.0)
-        self.assertAlmostEqual(trade["breakeven_total_proceeds"], 40.0, delta=0.5)
+        self.assertAlmostEqual(trade["breakeven_total_proceeds"], 39.9, delta=0.5)
         at_breakeven = old_lp_tradeoff(trade["breakeven_total_proceeds"])
         self.assertAlmostEqual(at_breakeven["difference"], 0.0, places=6)
 
